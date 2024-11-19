@@ -1,0 +1,54 @@
+/* Apply Poppins to body, input, and button across all pages */
+body, input[type="text"], button {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Enforce the background color across all pages */
+body {
+    background-color: #a8a8a8 !important;
+}
+
+/* Style for the image title (applies to all pages) */
+.title-image {
+    max-width: 100%;
+    height: auto;
+    width: 300px;
+    margin-top: -30px;
+}
+
+/* Hyperlink styles */
+#links a {
+    text-decoration: underline; /* Ensure links are underlined */
+    color: purple; /* Set link color to purple */
+}
+
+#links a:hover {
+    text-decoration: none; /* Remove underline on hover if preferred */
+    color: darkmagenta; /* Optional: Darken color on hover */
+}
+
+/* SPACING AND FONT SIZE for hyperlinks (applies to all pages) */
+#links {
+    margin-bottom: 20px !important;
+    margin-top: -10px !important;
+    font-size: 12px !important; /* Ensuring consistent font size across all pages */
+    letter-spacing: 2px !important;
+}
+
+/* Center elements across all pages */
+.center-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* NProgress bar customization for all pages */
+#nprogress .bar {
+    background: #29d;
+    height: 15px !important;
+}
+
+#nprogress .spinner-icon {
+    border-top-color: #29d;
+    border-left-color: #29d;
+}
