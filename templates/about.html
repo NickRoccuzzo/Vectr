@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Vectr</title>
+
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Include the shared styles from base.css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+
+    <!-- Optional: Bootstrap or additional page-specific styles -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<style>
+    /* Adjust the general font size for the table and page */
+    body {
+        font-size: 14px;
+    }
+
+    .tables-wrapper {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .bullish-section, .bearish-section {
+        border: 2px solid;
+        padding: 15px;
+        background-color: #e6ffe6;
+        flex: 1;
+        min-width: 300px;
+        text-align: center; /* Center-align the text in each section */
+    }
+
+    .bullish-section {
+        border-color: green;
+        background-color: #e6ffe6;
+    }
+
+    .bearish-section {
+        border-color: red;
+        background-color: #ffe6e6;
+    }
+
+    .bullish-section h3, .bearish-section h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-align: center; /* Center-align the BULLISH and BEARISH titles */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 13px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-size: 14px;
+    }
+
+    td[contenteditable="true"] {
+        background-color: #fff;
+        outline: none;
+        cursor: text;
+        transition: background-color 0.2s ease;
+    }
+
+    td[contenteditable="true"]:focus {
+        background-color: #e8f0fe;
+    }
+
+    .remove-button {
+        background: none;
+        border: none;
+        font-size: 12px;
+        cursor: pointer;
+        color: #d9534f;
+        padding: 0;
+        text-decoration: underline;
+    }
+
+    .remove-button:hover {
+        color: #c9302c;
+    }
+
+    .action-button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #007bff;
+        margin: 0 5px;
+        padding: 0;
+    }
+
+    .action-button:hover {
+        color: #0056b3;
+    }
+
+    .save-button {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+        display: block;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .save-button:hover {
+        background-color: #218838;
+    }
+
+    .save-button:active {
+        background-color: #1e7e34;
+    }
+
+    .save-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(72, 180, 97, 0.5);
+    }
+</style>
+</head>
+
+<body class="container mt-5">
+    <!-- Header with image and navigation links -->
+    <div class="center-wrapper">
+        <img src="{{ url_for('static', filename='TheNewestVectrHandII.png') }}" alt="Vectr Logo" class="title-image">
+
+        <!-- Hyperlinks for navigation -->
+        <div id="links" class="mb-3">
+            <a href="{{ url_for('index') }}">Home</a> |
+            <a href="{{ url_for('about') }}">About</a> |
+            <a href="{{ url_for('getting_started') }}">Getting Started</a> |
+            <a href="{{ url_for('contact') }}">Contact</a>
+        </div>
+    </div>
+
+    <h2>About Vectr</h2>
+
+<div class="tables-wrapper">
+    <!-- Bullish Section -->
+    <div class="bullish-section">
+        <h3>BULLISH</h3>
+        <table id="bullish-table">
+            <thead>
+                <tr>
+                    <th>TICKER</th>
+                    <th>EXPIRY</th>
+                    <th>NOTES</th>
+                </tr>
+            </thead>
+            <tbody id="bullish-tbody">
+                {% for entry in options_data.bullish %}
+                <tr data-ticker="{{ entry.ticker }}">
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="ticker">{{ entry.ticker }}</td>
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="expiry">{{ entry.expiry }}</td>
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="notes">{{ entry.notes }}</td>
+                    <td>
+                        <button class="remove-button" onclick="removeTicker('{{ entry.ticker }}', 'bullish')">remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button class="action-button add-button" onclick="addTicker('bullish')">+</button>
+    </div>
+
+    <!-- Bearish Section -->
+    <div class="bearish-section">
+        <h3>BEARISH</h3>
+        <table id="bearish-table">
+            <thead>
+                <tr>
+                    <th>TICKER</th>
+                    <th>EXPIRY</th>
+                    <th>NOTES</th>
+                </tr>
+            </thead>
+            <tbody id="bearish-tbody">
+                {% for entry in options_data.bearish %}
+                <tr data-ticker="{{ entry.ticker }}">
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="ticker">{{ entry.ticker }}</td>
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="expiry">{{ entry.expiry }}</td>
+                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="notes">{{ entry.notes }}</td>
+                    <td>
+                        <button class="remove-button" onclick="removeTicker('{{ entry.ticker }}', 'bearish')">remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button class="action-button add-button" onclick="addTicker('bearish')">+</button>
+    </div>
+</div>
+
+<!-- Single Save Button -->
+<button class="save-button" onclick="saveAllData()">Save</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+        // Initialize sortable for the bullish and bearish tables
+        new Sortable(document.getElementById('bullish-tbody'), {
+            animation: 150,
+            onEnd: function(evt) {
+                console.log('New order for bullish:', evt);
+            }
+        });
+
+        new Sortable(document.getElementById('bearish-tbody'), {
+            animation: 150,
+            onEnd: function(evt) {
+                console.log('New order for bearish:', evt);
+            }
+        });
+
+        function addTicker(type) {
+            const tableId = type === 'bullish' ? 'bullish-table' : 'bearish-table';
+            const tableBody = document.getElementById(tableId).querySelector('tbody');
+
+            const newRow = document.createElement('tr');
+            const newTicker = `NewTicker${Date.now()}`;
+
+            newRow.innerHTML = `
+                <td contenteditable="true" data-ticker="${newTicker}" data-field="ticker">New Ticker</td>
+                <td contenteditable="true" data-ticker="${newTicker}" data-field="expiry">New Expiry</td>
+                <td contenteditable="true" data-ticker="${newTicker}" data-field="notes">${type === 'bullish' ? '-' : 'bearish'}</td>
+                <td>
+                    <button class="remove-button" onclick="removeTicker('${newTicker}', '${type}')">remove</button>
+                </td>
+            `;
+
+            tableBody.appendChild(newRow);
+
+            fetch('/add_ticker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ticker: newTicker,
+                    expiry: 'New Expiry',
+                    notes: type === 'bullish' ? '-' : 'bearish'
+                })
+            }).then(response => response.json())
+              .then(data => {
+                if (!data.success) {
+                    console.error('Failed to add ticker', data.error);
+                }
+            }).catch(error => console.error('Error:', error));
+
+            attachContentEditableListeners(newRow);
+        }
+
+        function removeTicker(ticker, type) {
+            console.log('Removing ticker:', ticker, 'from type:', type);
+            document.querySelector(`tr[data-ticker="${ticker}"]`).remove();
+
+            fetch('/remove_ticker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker: ticker })
+            }).then(response => response.json())
+              .then(data => {
+                if (!data.success) {
+                    console.error('Failed to remove ticker:', data.error);
+                }
+            }).catch(error => console.error('Error while removing ticker:', error));
+        }
+
+function saveAllData() {
+    const dataToSave = {
+        bullish: [],
+        bearish: []
+    };
+
+    // Gather data from the bullish table
+    document.querySelectorAll('#bullish-tbody tr').forEach(row => {
+        const ticker = row.querySelector('td[data-field="ticker"]').textContent.trim();
+        const expiry = row.querySelector('td[data-field="expiry"]').textContent.trim();
+        const notes = row.querySelector('td[data-field="notes"]').textContent.trim();
+
+        dataToSave.bullish.push({
+            ticker: ticker,
+            expiry: expiry,
+            notes: notes
+        });
+    });
+
+    // Gather data from the bearish table
+    document.querySelectorAll('#bearish-tbody tr').forEach(row => {
+        const ticker = row.querySelector('td[data-field="ticker"]').textContent.trim();
+        const expiry = row.querySelector('td[data-field="expiry"]').textContent.trim();
+        const notes = row.querySelector('td[data-field="notes"]').textContent.trim();
+
+        dataToSave.bearish.push({
+            ticker: ticker,
+            expiry: expiry,
+            notes: notes
+        });
+    });
+
+    // Send the combined data to the server
+    fetch('/save_data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToSave)
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+            console.log('All data saved successfully');
+        } else {
+            console.error('Failed to save data:', data.error);
+        }
+    }).catch(error => console.error('Error while saving data:', error));
+}
+
+        function attachContentEditableListeners(row) {
+            row.querySelectorAll('td[contenteditable=true]').forEach(cell => {
+                cell.addEventListener('blur', function() {
+                    const newValue = cell.textContent.trim();
+                    const ticker = cell.getAttribute('data-ticker');
+                    const field = cell.getAttribute('data-field');
+
+                    fetch('/update_data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ticker: ticker,
+                            field: field,
+                            value: newValue
+                        })
+                    }).then(response => response.json())
+                      .then(data => {
+                        if (!data.success) {
+                            console.error('Failed to update data:', data.error);
+                        }
+                    }).catch(error => console.error('Error:', error));
+                });
+            });
+        }
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            attachContentEditableListeners(row);
+        });
+
+        // Listen for the 'Ctrl+S' key combination and trigger the save action
+document.addEventListener('keydown', function(event) {
+    // Check if 'Ctrl' (or 'Meta' on macOS) and 'S' are pressed simultaneously
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault(); // Prevent the default browser behavior (e.g., opening the browser's save dialog)
+        saveAllData(); // Call the save function
+        console.log('Ctrl+S pressed - Saving data...');
+    }
+});
+    </script>
+</body>
+
+</html>
