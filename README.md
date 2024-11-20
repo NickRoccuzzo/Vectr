@@ -127,16 +127,20 @@
 
 </details>
 
+------------
 
-Once you've successfully completed the prior steps, you will reach the home page:
+
+Once you've successfully completed the prior step of your choice and access the web application, you will reach the home page:
 
 ![GitHubPicture1_Search_Tickers](https://github.com/user-attachments/assets/cd802404-624d-4f67-8fee-3f6cb3928ed8)
 
+From here, you can search a singular ticker or multiple tickers, either comma or space separated.  You can then hit 'Enter' or press the 'Search' button to extract the option chain data
 
 ![GitHubPicture2_Search_Tickers_Cont](https://github.com/user-attachments/assets/9a017fa5-f778-4841-97dc-97d072ea6e66)
 
 
+Here's a sample of the option chain pulled for AAPL stock:
 ![image](https://github.com/user-attachments/assets/1bf826ca-b889-43fa-9852-6d15e89298a3)
 
-
+Here's some further detail on data is visualized for you:
 ![image](https://github.com/user-attachments/assets/081ed27e-ab4a-4a4a-8279-101ae1ba14a4)
