@@ -70,6 +70,38 @@ def save_options_data(ticker):
                     print(f"An error occurred while processing options for {date}: {e}")
     pass
 
+def preprocess_dates(data_dir, file_suffix):
+    """
+    Preprocess and sort option chain data by expiration dates.
+
+    Parameters:
+    - data_dir (str): Directory path containing the options data CSV files.
+    - file_suffix (str): 'CALLS' or 'PUTS' to handle specific file types.
+
+    Returns:
+    - dict: A dictionary with formatted dates as keys and corresponding DataFrames as values.
+    """
+    sorted_data = {}
+    for filename in os.listdir(data_dir):
+        if filename.endswith(file_suffix + ".csv"):
+            # Extract the date from the filename
+            date_str = filename.split(file_suffix)[0]
+            try:
+                # Convert to datetime and format
+                expiration_date = datetime.strptime(date_str, '%Y%m%d')
+                formatted_date = expiration_date.strftime('%m/%d/%y')
+
+                # Load the CSV and store in the dictionary
+                df = pd.read_csv(os.path.join(data_dir, filename))
+                if not df.empty:
+                    sorted_data[formatted_date] = df
+
+            except ValueError as e:
+                print(f"Error processing {filename}: {e}")
+
+    # Sort the dictionary by datetime keys
+    return dict(sorted(sorted_data.items(), key=lambda x: datetime.strptime(x[0], '%m/%d/%y')))
+
 
 def format_dollar_amount(amount):
     """
@@ -91,30 +123,6 @@ def format_dollar_amount(amount):
 def calculate_and_visualize_data(ticker, width=600, height=400):
     """
     Function that analyzes option chain data and generates Plotly visualizations for the given stock ticker(s).
-
-    BAR GRAPHS:
-    [Call OI, Put OI]
-    - Red & Green bars are used to quickly represent and visualize the cumulative open interest (OI) for Calls & Puts on
-    their respective expiration dates.  When the user hovers their cursor over a bar, the total amount will be
-    shown in an annotation.  (Ex. 438k)
-
-    LINE GRAPHS (with markers):
-    [Max Call, Max Put, Average]
-    - Calls & Puts that are seeing the greatest amount of Open Interest (OI) for each expiration date on the chain
-    - Average (takes into account all strikes for a given expiration date and weighs out an average)
-
-    MARKERS:
-    - Green/Red squares are dynamically-sized to further rank the Call/Put strikes with the highest Open Interest.
-    (For example, if one contract has an overwhelming amount of open interest in comparison to the entire chain itself,
-    this outlier will be highlighted accordingly)
-
-    ANNOTATIONS:
-    - 'Most Active Options' - These are the contracts that have the highest amount of 'volume' seen at the time of query.
-    This helps the user spot option flow at the time of query.  Generally, end of day holds the best data for upcoming
-    direction.
-
-    Returns:
-    fig (plotly.graph_objects.Figure): The Plotly figure object containing the visualization.
     """
 
     # Get the current working directory and construct paths for call and put data
@@ -122,10 +130,17 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     calls_dir = os.path.join(base_dir, ticker, "CALLS")
     puts_dir = os.path.join(base_dir, ticker, "PUTS")
 
-    # Initialize dictionaries to store data for visualization
-    calls_data, puts_data = {}, {}
-    max_strike_calls, second_max_strike_calls, max_strike_puts, second_max_strike_puts, avg_strike = {}, {}, {}, {}, {}
-    top_volume_contracts = []  # List to store top volume contracts for annotations
+    # Preprocess and sort calls and puts data
+    calls_data = preprocess_dates(calls_dir, "CALLS")
+    puts_data = preprocess_dates(puts_dir, "PUTS")
+
+    # Initialize dictionaries for visualization
+    calls_oi = {date: df['openInterest'].sum() for date, df in calls_data.items()}
+    puts_oi = {date: df['openInterest'].sum() for date, df in puts_data.items()}
+    max_strike_calls, max_strike_puts = {}, {}
+    second_max_strike_calls, second_max_strike_puts = {}, {}
+    avg_strike = {}
+    top_volume_contracts = []
 
     # Fetch current stock data using yfinance
     stock = yf.Ticker(ticker)
@@ -133,97 +148,61 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     current_price = current_data['Close'].iloc[-1]  # Current closing price of the stock
     company_name = stock.info.get('longName', 'N/A')  # Retrieve company name
 
-    # Process call options data
-    if os.path.exists(calls_dir):
-        for filename in os.listdir(calls_dir):
-            date_str = filename.split('CALLS')[0]
-            formatted_date = datetime.strptime(date_str, '%Y%m%d').strftime('%m/%d/%y')
-            formatted_date = formatted_date.lstrip('0').replace('/0', '/')
+    # Process sorted calls data
+    for date, df in calls_data.items():
+        if not df.empty:
+            # Calculate strikes with highest open interest
+            sorted_calls = df.sort_values(by='openInterest', ascending=False)
+            max_strike_calls[date] = sorted_calls.iloc[0]['strike'] if not sorted_calls.empty else 0
+            second_max_strike_calls[date] = sorted_calls.iloc[1]['strike'] if len(sorted_calls) > 1 else 0
 
-            try:
-                # Load call options data from CSV
-                df = pd.read_csv(os.path.join(calls_dir, filename))
-            except (pd.errors.EmptyDataError, FileNotFoundError) as e:
-                print(f"Warning: Could not read {filename} ({e}).")
-                continue
+            # Identify the call option with the highest volume
+            if df['volume'].notna().any():
+                highest_volume_call = df.loc[df['volume'].idxmax()]
+                total_spent = highest_volume_call['volume'] * highest_volume_call['lastPrice'] * 100
+                formatted_total_spent = format_dollar_amount(total_spent)
 
-            if not df.empty:
-                # Calculate total open interest for calls on this expiration date
-                calls_data[formatted_date] = df['openInterest'].sum()
+                # Append top volume contract details
+                top_volume_contracts.append({
+                    'type': 'CALL',
+                    'strike': highest_volume_call['strike'],
+                    'volume': highest_volume_call['volume'],
+                    'openInterest': highest_volume_call['openInterest'],
+                    'date': date,
+                    'total_spent': formatted_total_spent
+                })
 
-                # Find strikes with the highest open interest
-                sorted_calls = df.sort_values(by='openInterest', ascending=False)
-                max_strike_calls[formatted_date] = sorted_calls.iloc[0]['strike'] if not sorted_calls.empty else 0
-                second_max_strike_calls[formatted_date] = sorted_calls.iloc[1]['strike'] if len(sorted_calls) > 1 else 0
+    # Process sorted puts data
+    for date, df in puts_data.items():
+        if not df.empty:
+            # Calculate strikes with highest open interest
+            sorted_puts = df.sort_values(by='openInterest', ascending=False)
+            max_strike_puts[date] = sorted_puts.iloc[0]['strike'] if not sorted_puts.empty else 0
+            second_max_strike_puts[date] = sorted_puts.iloc[1]['strike'] if len(sorted_puts) > 1 else 0
 
-                # Identify the call option with the highest volume
-                if df['volume'].notna().any():
-                    highest_volume_call = df.loc[df['volume'].idxmax()]
+            # Identify the put option with the highest volume
+            if df['volume'].notna().any():
+                highest_volume_put = df.loc[df['volume'].idxmax()]
+                total_spent = highest_volume_put['volume'] * highest_volume_put['lastPrice'] * 100
+                formatted_total_spent = format_dollar_amount(total_spent)
 
-                    # Calculate total dollar amount spent on the highest volume call option
-                    total_spent = highest_volume_call['volume'] * highest_volume_call['lastPrice'] * 100
-                    formatted_total_spent = format_dollar_amount(total_spent)
-
-                    # Append top volume contract details for annotations
-                    top_volume_contracts.append({
-                        'type': 'CALL',
-                        'strike': highest_volume_call['strike'],
-                        'volume': highest_volume_call['volume'],
-                        'openInterest': highest_volume_call['openInterest'],
-                        'date': formatted_date,
-                        'total_spent': formatted_total_spent
-                    })
-
-    # Process put options data
-    if os.path.exists(puts_dir):
-        for filename in os.listdir(puts_dir):
-            date_str = filename.split('PUTS')[0]
-            formatted_date = datetime.strptime(date_str, '%Y%m%d').strftime('%m/%d/%y')
-            formatted_date = formatted_date.lstrip('0').replace('/0', '/')
-
-            try:
-                # Load put options data from CSV
-                df = pd.read_csv(os.path.join(puts_dir, filename))
-            except (pd.errors.EmptyDataError, FileNotFoundError) as e:
-                print(f"Warning: Could not read {filename} ({e}).")
-                continue
-
-            if not df.empty:
-                # Calculate total open interest for puts on this expiration date
-                puts_data[formatted_date] = df['openInterest'].sum()
-
-                # Find strikes with the highest open interest
-                sorted_puts = df.sort_values(by='openInterest', ascending=False)
-                max_strike_puts[formatted_date] = sorted_puts.iloc[0]['strike'] if not sorted_puts.empty else 0
-                second_max_strike_puts[formatted_date] = sorted_puts.iloc[1]['strike'] if len(sorted_puts) > 1 else 0
-
-                # Identify the put option with the highest volume
-                if df['volume'].notna().any():
-                    highest_volume_put = df.loc[df['volume'].idxmax()]
-
-                    # Calculate total dollar amount spent on the highest volume put option
-                    total_spent = highest_volume_put['volume'] * highest_volume_put['lastPrice'] * 100
-                    formatted_total_spent = format_dollar_amount(total_spent)
-
-                    # Append top volume contract details for annotations
-                    top_volume_contracts.append({
-                        'type': 'PUT',
-                        'strike': highest_volume_put['strike'],
-                        'volume': highest_volume_put['volume'],
-                        'openInterest': highest_volume_put['openInterest'],
-                        'date': formatted_date,
-                        'total_spent': formatted_total_spent
-                    })
-
+                # Append top volume contract details
+                top_volume_contracts.append({
+                    'type': 'PUT',
+                    'strike': highest_volume_put['strike'],
+                    'volume': highest_volume_put['volume'],
+                    'openInterest': highest_volume_put['openInterest'],
+                    'date': date,
+                    'total_spent': formatted_total_spent
+                })
 
     # Calculate average strike for visualization
-    for date in max_strike_calls:
-        if date in max_strike_puts and calls_data[date] + puts_data[date] > 0:
-            total_oi = calls_data[date] + puts_data[date]
-            weight_calls = calls_data[date] / total_oi if total_oi else 0
-            weight_puts = puts_data[date] / total_oi if total_oi else 0
+    for date in max_strike_calls.keys():
+        if date in max_strike_puts and calls_oi[date] + puts_oi[date] > 0:
+            total_oi = calls_oi[date] + puts_oi[date]
+            weight_calls = calls_oi[date] / total_oi if total_oi else 0
+            weight_puts = puts_oi[date] / total_oi if total_oi else 0
 
-            # Weighted average of top strikes
             avg_strike[date] = (
                 (max_strike_calls[date] * weight_calls +
                  second_max_strike_calls[date] * weight_calls +
@@ -234,423 +213,367 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         else:
             avg_strike[date] = np.nan
 
-    # Sort contracts by volume and configure how many you'd like to display on the plotly graph as annotations
-    top_volume_contracts.sort(key=lambda x: x['volume'], reverse=True)
-    # Most active options :
-    top_volume_contracts = top_volume_contracts[:4]  # <-- toggle this value to change the # of 'Most Active' Options
 
-    fig = go.Figure()
+# Sort contracts by volume and configure how many you'd like to display on the plotly graph as annotations
+top_volume_contracts.sort(key=lambda x: x['volume'], reverse=True)
+# Most active options:
+top_volume_contracts = top_volume_contracts[:4]  # <-- toggle this value to change the # of 'Most Active' Options
 
-    fig.add_trace(go.Bar(
-        x=list(calls_data.keys()),
-        y=list(calls_data.values()),
-        name='Call OI',
-        marker_color='#5a916d',
-        opacity=0.60,
-        showlegend=True,
-        hovertemplate='%{y:.3s}<extra></extra>'
-    ))
+fig = go.Figure()
 
-    fig.add_trace(go.Bar(
-        x=list(puts_data.keys()),
-        y=list(puts_data.values()),
-        name='Put OI',
-        marker_color='#875656',
-        opacity=0.60,
-        showlegend=True,
-        hovertemplate='%{y:.3s}<extra></extra>'
-    ))
+# Add Bar graph for Call OI
+fig.add_trace(go.Bar(
+    x=list(calls_oi.keys()),  # Sorted expiration dates for calls
+    y=list(calls_oi.values()),  # Total open interest per date
+    name='Call OI',
+    marker_color='#5a916d',
+    opacity=0.60,
+    showlegend=True,
+    hovertemplate='%{y:.3s}<extra></extra>'
+))
 
-    # Add the average strike line
-    fig.add_trace(go.Scatter(
-        x=list(avg_strike.keys()),
-        y=list(avg_strike.values()),
-        name='Average',
-        mode='lines+markers',
-        connectgaps=True,
-        marker=dict(
-            color='#565887',
-            size=4,
-            symbol='square',  # Change marker shape to square
-            line=dict(
-                color='black',  # Border color for the markers
-                width=1  # Border width for the markers
-            )
-        ),
-        opacity=0.80,
-        yaxis='y2',
-        showlegend=True,
+# Add Bar graph for Put OI
+fig.add_trace(go.Bar(
+    x=list(puts_oi.keys()),  # Sorted expiration dates for puts
+    y=list(puts_oi.values()),  # Total open interest per date
+    name='Put OI',
+    marker_color='#875656',
+    opacity=0.60,
+    showlegend=True,
+    hovertemplate='%{y:.3s}<extra></extra>'
+))
+
+# Add the average strike line
+fig.add_trace(go.Scatter(
+    x=list(avg_strike.keys()),  # Sorted expiration dates
+    y=list(avg_strike.values()),  # Average strikes per date
+    name='Average',
+    mode='lines+markers',
+    connectgaps=True,
+    marker=dict(
+        color='#565887',
+        size=4,
+        symbol='square',  # Change marker shape to square
         line=dict(
-            color='rgba(40, 40, 43, 0.5)',
-            width=2,
-            dash='dashdot'
-        ),
-        hovertemplate='%{y:.2f}<extra></extra>'
-    ))
+            color='black',  # Border color for the markers
+            width=1  # Border width for the markers
+        )
+    ),
+    opacity=0.80,
+    yaxis='y2',  # Use secondary y-axis for strike prices
+    showlegend=True,
+    line=dict(
+        color='rgba(40, 40, 43, 0.5)',
+        width=2,
+        dash='dashdot'
+    ),
+    hovertemplate='%{y:.2f}<extra></extra>'
+))
 
-    # Gather all open interest values for scaling
-    all_open_interest = []
+# Gather all open interest values for scaling
+all_open_interest = []
 
-    # Collect open interest values from call options
-    for filename in os.listdir(calls_dir):
-        df = pd.read_csv(os.path.join(calls_dir, filename)).sort_values(by='openInterest', ascending=False)
-        if not df.empty:
-            all_open_interest.append(df.iloc[0]['openInterest'])
+# Collect open interest values from preprocessed calls
+for date, df in calls_data.items():
+    if not df.empty:
+        all_open_interest.append(df['openInterest'].max())  # Use max OI for scaling
 
-    # Collect open interest values from put options
-    for filename in os.listdir(puts_dir):
-        df = pd.read_csv(os.path.join(puts_dir, filename)).sort_values(by='openInterest', ascending=False)
-        if not df.empty:
-            all_open_interest.append(df.iloc[0]['openInterest'])
+# Collect open interest values from preprocessed puts
+for date, df in puts_data.items():
+    if not df.empty:
+        all_open_interest.append(df['openInterest'].max())  # Use max OI for scaling
 
-    # Determine the max open interest for scaling
-    max_open_interest = max(all_open_interest) if all_open_interest else 1  # Avoid division by zero
+# Determine the max open interest for scaling
+max_open_interest = max(all_open_interest) if all_open_interest else 1  # Avoid division by zero
 
-    # Add line plot for max strike calls with scaled markers
-    fig.add_trace(go.Scatter(
-        x=list(max_strike_calls.keys()),
-        y=list(max_strike_calls.values()),
-        name='Call',
-        mode='lines+markers',  # Add markers
-        connectgaps=True,
-        opacity=0.55,
-        yaxis='y2',
-        showlegend=True,
-        line=dict(color='#75f542', width=1.80),
-        marker=dict(
-            size=[
-                (sorted_calls.iloc[0]['openInterest'] / max_open_interest * 20) if not sorted_calls.empty else 5
-                for sorted_calls in [
-                    pd.read_csv(os.path.join(calls_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
-                    for filename in os.listdir(calls_dir)
-                ]
-            ],
-            color='#75f542',  # Marker color
-            symbol='square',  # Square markers for calls
-            line=dict(width=1, color='black')  # Optional: border color for contrast
-        ),
-        hovertemplate=(
-            '<span style="font-family: Arial, sans-serif; font-size:9px;"><b>Strike:</b> $%{y:.2f}<br>'
-            '<b>Volume:</b> %{customdata[0]:,}<br>'
-            '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
-        ),
-        customdata=[
-            (sorted_calls.iloc[0]['volume'], sorted_calls.iloc[0]['openInterest']) if not sorted_calls.empty else (0, 0)
-            for sorted_calls in [
-                pd.read_csv(os.path.join(calls_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
-                for filename in os.listdir(calls_dir)
-            ]
-        ]
-    ))
+# Add line plot for max strike calls with scaled markers
+fig.add_trace(go.Scatter(
+    x=list(max_strike_calls.keys()),  # Sorted expiration dates
+    y=list(max_strike_calls.values()),
+    name='Call',
+    mode='lines+markers',  # Add markers
+    connectgaps=True,
+    opacity=0.55,
+    yaxis='y2',
+    showlegend=True,
+    line=dict(color='#75f542', width=1.80),
+    marker=dict(
+        size=[
+            (df['openInterest'].max() / max_open_interest * 20) if not df.empty else 5
+            for df in calls_data.values()
+        ],
+        color='#75f542',  # Marker color
+        symbol='square',  # Square markers for calls
+        line=dict(width=1, color='black')  # Optional: border color for contrast
+    ),
+    hovertemplate=(
+        '<span style="font-family: Arial, sans-serif; font-size:9px;"><b>Strike:</b> $%{y:.2f}<br>'
+        '<b>Volume:</b> %{customdata[0]:,}<br>'
+        '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
+    ),
+    customdata=[
+        (df['volume'].max(), df['openInterest'].max()) if not df.empty else (0, 0)
+        for df in calls_data.values()
+    ]
+))
 
-    fig.add_trace(go.Scatter(
-        x=list(second_max_strike_calls.keys()),
-        y=list(second_max_strike_calls.values()),
-        name='2nd Most-Bought Call',
-        mode='lines',
-        marker_color='#9bd186',
-        opacity=.50,
-        line=dict(width=1.50),
-        yaxis='y2',
-        showlegend=False,
-        hovertemplate='%{y:.2f}<extra></extra>'
-    ))
+# Add line plot for max strike puts with scaled markers
+fig.add_trace(go.Scatter(
+    x=list(max_strike_puts.keys()),  # Sorted expiration dates
+    y=list(max_strike_puts.values()),
+    name='Put',
+    mode='lines+markers',  # Add markers
+    connectgaps=True,
+    opacity=0.55,
+    yaxis='y2',
+    showlegend=True,
+    line=dict(color='#f54242', width=1.80),
+    marker=dict(
+        size=[
+            (df['openInterest'].max() / max_open_interest * 20) if not df.empty else 5
+            for df in puts_data.values()
+        ],
+        color='#de3557',  # Marker color
+        symbol='square',  # Square markers for puts
+        line=dict(width=1, color='black')  # Optional: border color for contrast
+    ),
+    hovertemplate=(
+        '<span style="font-family: Arial, sans-serif; font-size:9px;"><b>Strike:</b> $%{y:.2f}<br>'
+        '<b>Volume:</b> %{customdata[0]:,}<br>'
+        '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
+    ),
+    customdata=[
+        (df['volume'].max(), df['openInterest'].max()) if not df.empty else (0, 0)
+        for df in puts_data.values()
+    ]
+))
 
-    # Add line plot for max strike puts with scaled markers
-    fig.add_trace(go.Scatter(
-        x=list(max_strike_puts.keys()),
-        y=list(max_strike_puts.values()),
-        name='Put',
-        mode='lines+markers',  # Add markers
-        connectgaps=True,
-        opacity=0.55,
-        yaxis='y2',
-        showlegend=True,
-        line=dict(color='#f54242', width=1.80),
-        marker=dict(
-            size=[
-                (sorted_puts.iloc[0]['openInterest'] / max_open_interest * 20) if not sorted_puts.empty else 5
-                for sorted_puts in [
-                    pd.read_csv(os.path.join(puts_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
-                    for filename in os.listdir(puts_dir)
-                ]
-            ],
-            color='#de3557',  # Marker color
-            symbol='square',  # Square markers for puts
-            line=dict(width=1, color='black')  # Optional: border color for contrast
-        ),
-        hovertemplate=(
-            '<span style="font-family: Arial, sans-serif; font-size:9px;"><b>Strike:</b> $%{y:.2f}<br>'
-            '<b>Volume:</b> %{customdata[0]:,}<br>'
-            '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
-        ),
-        customdata=[
-            (sorted_puts.iloc[0]['volume'], sorted_puts.iloc[0]['openInterest']) if not sorted_puts.empty else (0, 0)
-            for sorted_puts in [
-                pd.read_csv(os.path.join(puts_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
-                for filename in os.listdir(puts_dir)
-            ]
-        ]
-    ))
+# Calculate total Volume for calls
+total_call_volume = sum(df['volume'].sum() for df in calls_data.values() if not df.empty)
 
-    fig.add_trace(go.Scatter(
-        x=list(second_max_strike_puts.keys()),
-        y=list(second_max_strike_puts.values()),
-        name='2nd Most-Bought Put',
-        mode='lines',
-        marker_color='#d18686',
-        opacity=.50,
-        line=dict(width=1.50),
-        yaxis='y2',
-        showlegend=False,
-        hovertemplate='%{y:.2f}<extra></extra>'
-    ))
+# Calculate total Volume for puts
+total_put_volume = sum(df['volume'].sum() for df in puts_data.values() if not df.empty)
 
-    # Calculate total Volume for calls
-    total_call_volume = 0
-    for filename in os.listdir(calls_dir):
-        df = pd.read_csv(os.path.join(calls_dir, filename))
-        if not df.empty and 'volume' in df.columns:
-            total_call_volume += df['volume'].sum()
+# Format total Volume for display
+formatted_call_volume = f"{int(total_call_volume):,}"
+formatted_put_volume = f"{int(total_put_volume):,}"
 
-    # Calculate total Volume for puts
-    total_put_volume = 0
-    for filename in os.listdir(puts_dir):
-        df = pd.read_csv(os.path.join(puts_dir, filename))
-        if not df.empty and 'volume' in df.columns:
-            total_put_volume += df['volume'].sum()
+# Determine text color based on which total is higher
+call_color = "#32a852" if total_call_volume > total_put_volume else "#ffffff"  # Green if calls are higher
+put_color = "#de3557" if total_put_volume > total_call_volume else "#ffffff"  # Red if puts are higher
 
-    # Format total Volume for display
-    formatted_call_volume = f"{int(total_call_volume):,}"
-    formatted_put_volume = f"{int(total_put_volume):,}"
+# Add annotation box to the upper-left corner
+fig.add_annotation(
+    text=(
+        f"<b>Net Call Volume: <span style='color:{call_color}'>{formatted_call_volume}</b></span><br>"
+        f"<b>Net Put Volume: <span style='color:{put_color}'>{formatted_put_volume}</b></span>"
+    ),
+    xref="paper", yref="paper",
+    x=0.01, y=1.20,  # Adjust the position (y > 1 moves it further up)
+    showarrow=False,
+    font=dict(
+        family="Arial, sans-serif",
+        size=10,
+        color="white"
+    ),
+    align="left",
+    bgcolor="#515452",  # Background color
+    bordercolor="#636363",  # Border color
+    borderwidth=1,
+    borderpad=5
+)
 
-    # Determine text color based on which total is higher
-    call_color = "#32a852" if total_call_volume > total_put_volume else "#ffffff"  # Green if calls are higher
-    put_color = "#de3557" if total_put_volume > total_call_volume else "#ffffff"  # Red if puts are higher
+# Calculate total premiums for calls
+total_call_premium = sum((df['volume'] * df['lastPrice'] * 100).sum() for df in calls_data.values() if not df.empty)
 
-    # Add annotation box to the upper-left corner
-    fig.add_annotation(
-        text=(
-            f"<b>Net Call Volume: <span style='color:{call_color}'>{formatted_call_volume}</b></span><br>"
-            f"<b>Net Put Volume: <span style='color:{put_color}'>{formatted_put_volume}</b></span>"
-        ),
-        xref="paper", yref="paper",
-        x=0.01, y=1.20,  # Adjust the position (y > 1 moves it further up)
-        showarrow=False,
-        font=dict(
-            family="Arial, sans-serif",
-            size=10,
-            color="white"
-        ),
-        align="left",
-        bgcolor="#515452",  # Background color
-        bordercolor="#636363",  # Border color
-        borderwidth=1,
-        borderpad=5
+# Calculate total premiums for puts
+total_put_premium = sum((df['volume'] * df['lastPrice'] * 100).sum() for df in puts_data.values() if not df.empty)
+
+# Format total premiums for display
+formatted_call_premium = format_dollar_amount(total_call_premium)
+formatted_put_premium = format_dollar_amount(total_put_premium)
+
+# Determine text color based on which premium is higher
+call_premium_color = "#32a852" if total_call_premium > total_put_premium else "#ffffff"  # Green if calls are higher
+put_premium_color = "#de3557" if total_put_premium > total_call_premium else "#ffffff"  # Red if puts are higher
+
+# Add annotation for total premiums below the volume annotation
+fig.add_annotation(
+    text=(
+        f"<b>Net Call Premium: <span style='color:{call_premium_color}'>{formatted_call_premium}</b></span><br>"
+        f"<b>Net Put Premium: <span style='color:{put_premium_color}'>{formatted_put_premium}</b></span>"
+    ),
+    xref="paper", yref="paper",
+    x=0.01, y=1.09,  # Slightly lower than the previous annotation
+    showarrow=False,
+    font=dict(
+        family="Arial, sans-serif",
+        size=10,
+        color="white"
+    ),
+    align="left",
+    bgcolor="#515452",  # Background color
+    bordercolor="#636363",  # Border color
+    borderwidth=1,
+    borderpad=5
+)
+
+# Add annotations for the highest volume contracts
+offset_step = 2  # Incremental offset for each subsequent annotation
+for idx, ann in enumerate(top_volume_contracts):
+    # Determine color based on option type
+    color = '#ff5e00' if ann['type'] == 'PUT' else '#32a852'
+
+    # Change the marker symbol to a diamond
+    symbol = 'diamond'
+
+    # Format volume, strike, openInterest, and total_spent with commas
+    formatted_volume = f"{int(ann['volume']):,}"
+    formatted_strike = f"{int(ann['strike']):,}"
+    formatted_open_interest = f"{int(ann['openInterest']):,}"
+    formatted_total_spent = ann['total_spent']
+
+    # Use HTML to format the annotation text
+    annotation_text = (
+        f"<b><span style='font-size:10px;'>${formatted_strike} <span style='color:{color}'>{ann['type']}</span></span></b><br>"
+        f"<span style='font-size:10px;'><span style='color:#cfcfcf'><b>Qty:</span> {formatted_volume}<br></b></span>"
+        f"<span style='font-size:10.5px;'><b>{formatted_total_spent}</b></span>"
     )
 
-    # Calculate total premiums for calls
-    total_call_premium = 0
-    for filename in os.listdir(calls_dir):
-        df = pd.read_csv(os.path.join(calls_dir, filename))
-        if not df.empty and 'volume' in df.columns and 'lastPrice' in df.columns:
-            total_call_premium += (df['volume'] * df['lastPrice'] * 100).sum()
+    # Calculate offset to prevent overlap
+    ax_offset = 35 if ann['type'] == 'PUT' else -35  # Right for PUT, Left for CALL
+    ay_offset = -35 - (idx * offset_step)  # Vertical offset based on order
 
-    # Calculate total premiums for puts
-    total_put_premium = 0
-    for filename in os.listdir(puts_dir):
-        df = pd.read_csv(os.path.join(puts_dir, filename))
-        if not df.empty and 'volume' in df.columns and 'lastPrice' in df.columns:
-            total_put_premium += (df['volume'] * df['lastPrice'] * 100).sum()
-
-    # Format total premiums for display
-    formatted_call_premium = format_dollar_amount(total_call_premium)
-    formatted_put_premium = format_dollar_amount(total_put_premium)
-
-    # Determine text color based on which premium is higher
-    call_premium_color = "#32a852" if total_call_premium > total_put_premium else "#ffffff"  # Green if calls are higher
-    put_premium_color = "#de3557" if total_put_premium > total_call_premium else "#ffffff"  # Red if puts are higher
-
-    # Add annotation for total premiums below the volume annotation
+    # Point annotations to the strike price on yaxis2
     fig.add_annotation(
-        text=(
-            f"<b>Net Call Premium: <span style='color:{call_premium_color}'>{formatted_call_premium}</b></span><br>"
-            f"<b>Net Put Premium: <span style='color:{put_premium_color}'>{formatted_put_premium}</b></span>"
-        ),
-        xref="paper", yref="paper",
-        x=0.01, y=1.09,  # Slightly lower than the previous annotation
-        showarrow=False,
-        font=dict(
-            family="Arial, sans-serif",
-            size=10,
-            color="white"
-        ),
-        align="left",
-        bgcolor="#515452",  # Background color
-        bordercolor="#636363",  # Border color
-        borderwidth=1,
-        borderpad=5
-    )
-
-
-    # Add annotations for the highest volume contracts
-    offset_step = 2  # Incremental offset for each subsequent annotation
-    for idx, ann in enumerate(top_volume_contracts):
-        # Determine color based on option type
-        color = '#ff5e00' if ann['type'] == 'PUT' else '#32a852'
-
-        # Change the marker symbol to a diamond
-        symbol = 'diamond'
-
-        # Format volume, strike, openInterest, and total_spent with commas
-        formatted_volume = f"{int(ann['volume']):,}"
-        formatted_strike = f"{int(ann['strike']):,}"
-        formatted_open_interest = f"{int(ann['openInterest']):,}"
-        formatted_total_spent = ann['total_spent']
-
-        # Use HTML to format the annotation text
-        annotation_text = (
-            f"<b><span style='font-size:10px;'>${formatted_strike} <span style='color:{color}'>{ann['type']}</span></span></b><br>"  # Bold, change color, and increase font size
-            f"<span style='font-size:10px;'><span style='color:#cfcfcf'><b>Qty:</span> {formatted_volume}<br></b></span>"
-            f"<span style='font-size:10.5px;'><b>{formatted_total_spent}</b></span>"
-        )
-
-        # Calculate offset to prevent overlap
-        ax_offset = 35 if ann['type'] == 'PUT' else -35  # Right for PUT, Left for CALL
-        ay_offset = -35 - (idx * offset_step)  # Vertical offset based on order
-
-        # Point annotations to the strike price on yaxis2
-        fig.add_annotation(
-            text=annotation_text,
-            x=ann['date'],
-            y=ann['strike'],  # Point to the strike price
-            yref='y2',  # Reference the y2 axis
-            font=dict(
-                family='Arial, sans-serif',
-                size=8,
-                color='#ffffff'
-            ),
-            bgcolor='#3b3b3b',
-            showarrow=True,
-            arrowhead=0,  # Set to 0 to remove arrowhead shape
-            ax=ax_offset,
-            ay=ay_offset,
-            arrowwidth=1.5,
-            bordercolor='#636363',  # Set border color
-            borderwidth=1,  # Set border width for thin outline
-            borderpad=4  # Padding between the text and the border
-        )
-
-        # Add a triangle marker where the annotation is pointing
-        fig.add_trace(go.Scatter(
-            x=[ann['date']],
-            y=[ann['strike']],  # Ensure this is set to strike price for correct placement
-            mode='markers',
-            marker=dict(
-                size=8,  # Adjust size of the diamond marker
-                color=color,  # Use the same color as the annotation for consistency
-                symbol=symbol,  # Diamond shape for the marker
-                line=dict(width=1, color='#636363')  # Optional: border color for contrast
-            ),
-            showlegend=False,  # Hide this trace from the legend
-            xaxis='x',  # Ensure correct x-axis reference
-            yaxis='y2',  # Ensure correct y-axis reference for positioning
-            hoverinfo='skip'  # Disable hover text for this marker
-        ))
-
-
-    fig.add_shape(
-        type='line',
-        x0=0,
-        x1=1,
-        xref='paper',
-        y0=current_price,
-        y1=current_price,
-        yref='y2',
-        line=dict(
-            color='#00dbf4',
-            width=1,
-            dash='solid',
-        )
-    )
-
-    fig.add_annotation(
-        text=f'${current_price:.2f}',
-        xref='paper',
-        x=-0.01,
-        y=current_price,
-        yref='y2',
+        text=annotation_text,
+        x=ann['date'],  # Ensure this matches the formatted_date used in preprocessing
+        y=ann['strike'],  # Point to the strike price
+        yref='y2',  # Reference the y2 axis
         font=dict(
             family='Arial, sans-serif',
-            size=10,
+            size=8,
             color='#ffffff'
         ),
-        bgcolor='#333333',
-        showarrow=False
+        bgcolor='#3b3b3b',
+        showarrow=True,
+        arrowhead=0,  # Set to 0 to remove arrowhead shape
+        ax=ax_offset,
+        ay=ay_offset,
+        arrowwidth=1.5,
+        bordercolor='#636363',  # Set border color
+        borderwidth=1,  # Set border width for thin outline
+        borderpad=4  # Padding between the text and the border
     )
 
+    # Add a triangle marker where the annotation is pointing
     fig.add_trace(go.Scatter(
-        x=[None],  # Use None to keep the trace from appearing on the plot
-        y=[None],  # Use None to keep the trace from appearing on the plot
+        x=[ann['date']],  # Matches the x-axis dates in the graph
+        y=[ann['strike']],  # Ensure this is set to strike price for correct placement
         mode='markers',
         marker=dict(
-            size=25,
-            color='#3b3b3b',
-            symbol='square',
-            line=dict(width=1, color='#636363')  # border color
+            size=8,  # Adjust size of the diamond marker
+            color=color,  # Use the same color as the annotation for consistency
+            symbol=symbol,  # Diamond shape for the marker
+            line=dict(width=1, color='#636363')  # Optional: border color for contrast
         ),
-        name='<span style="color:#10112e">Most Active Options</span>',
-        # Custom legend text with white color
-        showlegend=True
+        showlegend=False,  # Hide this trace from the legend
+        xaxis='x',  # Ensure correct x-axis reference
+        yaxis='y2',  # Ensure correct y-axis reference for positioning
+        hoverinfo='skip'  # Disable hover text for this marker
     ))
 
-    fig.update_layout(
-        title=dict(
-            text=f'{ticker} - ${current_price:.2f}<br><span style="font-size:15px; line-height:0.4;">({company_name})</span>',
-            x=0.5,
-            y=0.95,
-            xanchor='center',
-            yanchor='top',
-            font=dict(size=30, family='Arial, sans-serif', color='#01234a', style='italic')
-        ),
-        legend=dict(
-            x=0.5, y=1.1,
-            xanchor='center', yanchor='top',
-            font=dict(size=10, family='Arial, sans-serif', style='italic'),
-            orientation='h',
-        ),
-        xaxis=dict(
-            title='',
-            title_font=dict(size=20, family='Arial, sans-serif', color='#2c3442', style='italic'),
-            showgrid=False,
-            autorange=True
-        ),
-        yaxis=dict(
-            title='',  # Hide the Open Interest title
-            showticklabels=False,  # Hide the tick labels
-            showgrid=False,  # Hide grid lines
-            side='right',
-            autorange=True
-        ),
-        yaxis2=dict(
-            title='Strike',
-            title_font=dict(size=30, family='Arial, sans-serif', color='#2c3442', style='italic'),
-            side='left',
-            overlaying='y',
-            range=[0, max(max(max_strike_calls.values(), default=0),
-                          max(max_strike_puts.values(), default=0),
-                          max(avg_strike.values(), default=0),
-                          current_price) + 50],
-            autorange=True
-        ),
-        barmode='group',
-        plot_bgcolor='#a8a8a8',
-        paper_bgcolor='#a8a8a8',
-        width=width,
-        height=height
+# Add a horizontal line for the current price
+fig.add_shape(
+    type='line',
+    x0=0,
+    x1=1,
+    xref='paper',
+    y0=current_price,
+    y1=current_price,
+    yref='y2',
+    line=dict(
+        color='#00dbf4',
+        width=1,
+        dash='solid',
     )
+)
 
-    return fig
-    pass
+# Add annotation for the current price
+fig.add_annotation(
+    text=f'${current_price:.2f}',
+    xref='paper',
+    x=-0.01,
+    y=current_price,
+    yref='y2',
+    font=dict(
+        family='Arial, sans-serif',
+        size=10,
+        color='#ffffff'
+    ),
+    bgcolor='#333333',
+    showarrow=False
+)
 
+# Add a dummy trace for the legend
+fig.add_trace(go.Scatter(
+    x=[None],  # Use None to keep the trace from appearing on the plot
+    y=[None],  # Use None to keep the trace from appearing on the plot
+    mode='markers',
+    marker=dict(
+        size=25,
+        color='#3b3b3b',
+        symbol='square',
+        line=dict(width=1, color='#636363')  # border color
+    ),
+    name='<span style="color:#10112e">Most Active Options</span>',  # Custom legend text
+    showlegend=True
+))
+
+# Update layout with consistent settings
+fig.update_layout(
+    title=dict(
+        text=f'{ticker} - ${current_price:.2f}<br><span style="font-size:15px; line-height:0.4;">({company_name})</span>',
+        x=0.5,
+        y=0.95,
+        xanchor='center',
+        yanchor='top',
+        font=dict(size=30, family='Arial, sans-serif', color='#01234a', style='italic')
+    ),
+    legend=dict(
+        x=0.5, y=1.1,
+        xanchor='center', yanchor='top',
+        font=dict(size=10, family='Arial, sans-serif', style='italic'),
+        orientation='h',
+    ),
+    xaxis=dict(
+        title='',
+        title_font=dict(size=20, family='Arial, sans-serif', color='#2c3442', style='italic'),
+        showgrid=False,
+        autorange=True
+    ),
+    yaxis=dict(
+        title='',  # Hide the Open Interest title
+        showticklabels=False,  # Hide the tick labels
+        showgrid=False,  # Hide grid lines
+        side='right',
+        autorange=True
+    ),
+    yaxis2=dict(
+        title='Strike',
+        title_font=dict(size=30, family='Arial, sans-serif', color='#2c3442', style='italic'),
+        side='left',
+        overlaying='y',
+        range=[0, max(max(max_strike_calls.values(), default=0),
+                      max(max_strike_puts.values(), default=0),
+                      max(avg_strike.values(), default=0),
+                      current_price) + 50],
+        autorange=True
+    ),
+    barmode='group',
+    plot_bgcolor='#a8a8a8',
+    paper_bgcolor='#a8a8a8',
+    width=width,
+    height=height
+)
 
