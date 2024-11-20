@@ -153,36 +153,58 @@ Here's a sample of the option chain pulled for AAPL stock:
 
 ### Data Visualizations and Insights
 
-The Vectr platform provides a suite of dynamic and interactive visualizations to help users analyze stock options data effectively. Here's what the visualizations include:
+<details>
+  <summary>💲 <b>Current Price Line</b> 💲</summary>
 
-- **💲 Current Price Line 💲**:
   - A bright blue horizontal line is plotted on the graph to represent the current price of the stock.
   - This helps users quickly see where the current price stands relative to the available options data.
 
-- **📊 Bar Graphs for Open Interest (OI) 📊**:
+</details>
+
+<details>
+  <summary>📊 <b>Bar Graphs for Open Interest (OI)</b> 📊</summary>
+
   - Visualize the Open Interest (OI)—the number of contracts currently open for each strike price.
   - Users can hover over each bar to see the cumulative OI # of all **Call** or **Put** contracts for that particular expiration date.
   - Outliers are immediately visible, drawing attention to expiration dates with an unusual amount of interest in one side or the other.
 
-- **📈 Line Graphs for Highest Open Interest Contracts 📉**:
+</details>
+
+<details>
+  <summary>📈 <b>Line Graphs for Highest Open Interest Contracts</b> 📉</summary>
+
   - Line graphs are plotted using the **specific Call & Put contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers **most significant**.
   - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call contract & **$5** Put contract have the highest Open Interest, those will be graphed as the key data points for that expiration.
 
-- **⚖️ Weighted Average Line Graph ⚖️**:
+</details>
+
+<details>
+  <summary>⚖️ <b>Weighted Average Line Graph</b> ⚖️</summary>
+
   - This graph provides an "average" view of the market's activity, weighted by Open Interest.
   - Strike prices with higher Open Interest have a greater impact on this line, giving users a clearer sense of market sentiment.
   - Example: If 100 Call contracts are bought at a $100 strike price, and 30 Put contracts are bought at a $50 strike price, the average line will slightly favor the Call options, resulting in an upward movement.
 
-- **🟩 Dynamic Highlights for Key Data Points 🟥**:
+</details>
+
+<details>
+  <summary>🟩 <b>Dynamic Highlights for Key Data Points</b> 🟥</summary>
+
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
- 
-- **🐂 Net Call/Put Premium & Volume 🐻**:
+
+</details>
+
+<details>
+  <summary>🐂 <b>Net Call/Put Premium & Volume</b> 🐻</summary>
+
   - Two annotations in the top-left corner of the Plotly graph display these aggregate values:
     - **Premium**: The total dollar amount spent across the option chain at the time of the query.
     - **Volume**: The total number of contracts purchased at the time of the query.
   - These metrics provide insights into the type of flow the chain is experiencing, helping users determine whether sentiment is more **bullish** or **bearish**.
+
+</details>
 
 By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
 
