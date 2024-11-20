@@ -161,13 +161,13 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
 
 - **📊 Bar Graphs for Open Interest (OI) 📊**:
   - Visualize the Open Interest (OI)—the number of contracts currently open for each strike price.
-  - Users can hover over each bar to see detailed **Call/Put ratios**.
-  - Outliers are immediately visible, drawing attention to strike prices with unusually high activity.
+  - Users can hover over each bar to see the cumulative OI # of all **Call** or **Put** contracts for that particular expiration date.
+  - Outliers are immediately visible, drawing attention to expiration dates with an unusual amount of interest in one side or the other.
 
 - **📈 Line Graphs for Highest Open Interest Contracts 📉**:
-  - Line graphs are plotted for the **specific contracts with the highest Open Interest** at each expiration date.
-  - These data points reflect the strike prices that the market considers most significant.
-  - For instance, if strike prices are $5, $10, $15, and $20, and the $10 contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
+  - Line graphs are plotted using the **specific Call & Put contracts with the highest Open Interest** at each expiration date.
+  - These data points reflect the strike prices that the market considers **most significant**.
+  - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call/Put contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
 
 - **⚖️ Weighted Average Line Graph ⚖️**:
   - This graph provides an "average" view of the market's activity, weighted by Open Interest.
