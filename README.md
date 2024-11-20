@@ -13,7 +13,7 @@
 ------------
 
 
-**How It Works**
+**⚙️ How It Works**
 
   1. **Clone the Repository**:
      ```bash
