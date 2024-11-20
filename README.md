@@ -1,4 +1,6 @@
 # Vectr
+![GitHubPicture1_Search_Tickers](https://github.com/user-attachments/assets/7d251690-8b03-4e2a-bbb1-ab6850b6dae0)
+
 
 **Vectr** is a Python-based tool designed to simplify stock option analysis. Built on the powerful `yfinance` module and supported by additional libraries such as `Flask`, `Pandas`, and `Plotly`, Vectr provides users with an intuitive interface for exploring and visualizing stock options data.
 
@@ -81,6 +83,7 @@
 
 </details>
 
+![GitHubPicture2_Search_Tickers_Cont](https://github.com/user-attachments/assets/9a017fa5-f778-4841-97dc-97d072ea6e66)
 
 
 ![image](https://github.com/user-attachments/assets/1bf826ca-b889-43fa-9852-6d15e89298a3)
