@@ -155,7 +155,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 (Select any of the below to gain further information)
 
 <details>
-  <summary>💲 <b>Current Price Line</b> 💲</summary>
+  <summary>💲 <b>Current Price Line</b></summary>
 
   - A bright blue horizontal line is plotted on the graph to represent the current price of the stock.
   - This helps users quickly see where the current price stands relative to the available options data.
@@ -163,7 +163,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 </details>
 
 <details>
-  <summary>📊 <b>Bar Graphs for Open Interest (OI)</b> 📊</summary>
+  <summary>📊 <b>Bar Graphs for Open Interest (OI)</b></summary>
 
   - Visualize the Open Interest (OI)—the number of contracts currently open for each strike price.
   - Users can hover over each bar to see the cumulative OI # of all **Call** or **Put** contracts for that particular expiration date.
@@ -172,7 +172,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 </details>
 
 <details>
-  <summary>📈 <b>Line Graphs for Highest Open Interest Contracts</b> 📉</summary>
+  <summary>📈 <b>Line Graphs for Highest Open Interest Contracts</b></summary>
 
   - Line graphs are plotted using the **specific Call & Put contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers **most significant**.
@@ -181,7 +181,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 </details>
 
 <details>
-  <summary>⚖️ <b>Weighted Average Line Graph</b> ⚖️</summary>
+  <summary>⚖️ <b>Weighted Average Line Graph</b></summary>
 
   - This graph provides an "average" view of the market's activity, weighted by Open Interest.
   - Strike prices with higher Open Interest have a greater impact on this line, giving users a clearer sense of market sentiment.
@@ -190,7 +190,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 </details>
 
 <details>
-  <summary>🟩 <b>Dynamic Highlights for Key Data Points</b> 🟥</summary>
+  <summary>🟩 <b>Dynamic Highlights for Key Data Points</b></summary>
 
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
@@ -198,7 +198,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 </details>
 
 <details>
-  <summary>🐂 <b>Net Call/Put Premium & Volume</b> 🐻</summary>
+  <summary>🐂 <b>Net Call/Put Premium & Volume</b></summary>
 
   - Two annotations in the top-left corner of the Plotly graph display these aggregate values:
     - **Premium**: The total dollar amount spent across the option chain at the time of the query.
