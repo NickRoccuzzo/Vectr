@@ -155,7 +155,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 (Select any of the below to gain further information)
 
 <details>
-  <summary>💲 <b>Current Price Line</b></summary>
+  <summary>🔹 <b>Current Stock Price Line</b></summary>
 
   - A bright blue horizontal line is plotted on the graph to represent the current price of the stock.
   - This helps users quickly see where the current price stands relative to the available options data.
