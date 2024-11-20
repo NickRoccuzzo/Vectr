@@ -152,6 +152,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 ------------
 
 ### Data Visualizations and Insights
+(Select any of the below to gain further information)
 
 <details>
   <summary>💲 <b>Current Price Line</b> 💲</summary>
