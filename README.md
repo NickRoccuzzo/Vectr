@@ -16,7 +16,7 @@
 ### **⚙️ How It Works:**
 
 <details>
-  <summary>Running Vectr in a <b>Docker Container</b></summary>
+  <summary>... in a <b>Docker Container</b></summary>
 
   1. **Clone the Repository**:
      ```bash
@@ -43,7 +43,7 @@
 </details>
 
 <details>
-  <summary>Running Vectr in a <b>Virtual Environment (venv)</b></summary>
+  <summary>... in a <b>Virtual Environment (venv)</b></summary>
 
   1. **Clone the Repository**:
      ```bash
@@ -82,7 +82,7 @@
 </details>
 
 <details>
-  <summary>Running Vectr in an <b>IDE (e.g., PyCharm, VSCode)</b></summary>
+  <summary>... in an <b>IDE (e.g., PyCharm, VSCode)</b></summary>
 
   1. **Clone the Repository**:
      - Use your IDE's terminal or any terminal to clone the repository:
