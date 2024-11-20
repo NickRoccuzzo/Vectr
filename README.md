@@ -161,7 +161,7 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
   - Users can hover over each bar to see detailed **Call/Put ratios**.
   - Outliers are immediately visible, drawing attention to strike prices with unusually high activity.
 
-- ** 📈 Line Graphs for Highest Open Interest Contracts 📉**:
+- **📈 Line Graphs for Highest Open Interest Contracts 📉**:
   - Line graphs are plotted for the **specific contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers most significant.
   - For instance, if strike prices are $5, $10, $15, and $20, and the $10 contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
@@ -174,5 +174,11 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
 - **🟩 Dynamic Highlights for Key Data Points 🟥**:
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
+ 
+- **🐂Net Call/Put Premium & Net Call/Put Volume🐻**:
+  - Two annotations in the top-left corner of the Plotly graph display these aggregate values:
+    - **Premium**: The total dollar amount spent across the option chain at the time of the query.
+    - **Volume**: The total number of contracts purchased at the time of the query.
+  - These metrics provide insights into the type of flow the chain is experiencing, helping users determine whether sentiment is more **bullish** or **bearish**.
 
 By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
