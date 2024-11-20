@@ -186,5 +186,5 @@ By combining these elements, Vectr ensures users can effortlessly identify trend
 
 ------------
 **⚠️ WARNING: NOT FINANCIAL ADVICE ⚠️**
-------------
+
 Vectr is an ongoing project, and new features and improvements are regularly being added. Feedback is welcome as we continue to refine and enhance the application.
