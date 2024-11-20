@@ -134,8 +134,7 @@ Once you've successfully completed the steps of your choice and access the web a
 
 ![GitHubPicture1_Search_Tickers](https://github.com/user-attachments/assets/cd802404-624d-4f67-8fee-3f6cb3928ed8)
 
-From here, you can either search a singular ticker or multiple tickers.  You can separate them with commas, spaces, or both.  
-You can then hit 'Enter' or press the 'Search' button to extract the option chain data
+From here, you can either search a singular ticker or multiple tickers.  You can separate them with commas, spaces, or both.  You can then hit 'Enter' or press the 'Search' button to extract the option chain data
 
 ![GitHubPicture2_Search_Tickers_Cont](https://github.com/user-attachments/assets/9a017fa5-f778-4841-97dc-97d072ea6e66)
 
