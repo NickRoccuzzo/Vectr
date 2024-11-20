@@ -551,10 +551,10 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             title_font=dict(size=20, family='Arial, sans-serif', color='#2c3442', style='italic'),
             showgrid=False,
             autorange=True,
-            tickangle=40,  # Force the x-axis tick labels to display at a 45-degree angle
+            tickangle=38,  # Force the x-axis tick labels to display at a 45-degree angle
             tickfont=dict(
                 family="Arial, sans-serif",
-                size=11,  # Adjust size if necessary
+                size=12.5,  # Adjust size if necessary
                 color='#01234a'
             )
         ),
@@ -585,4 +585,3 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
 
     return fig
     pass
-
