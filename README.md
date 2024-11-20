@@ -10,9 +10,8 @@
 **How It Works**
 
   1. **Clone the Repository**:
-     Run the following commands:
      ```bash
-     git clone https://github.com/YourUsername/Vectr.git
+     git clone https://github.com/NickRoccuzzo/Vectr.git
      cd Vectr
      ```
 
