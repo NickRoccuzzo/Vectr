@@ -16,7 +16,7 @@
 ### How It Works
 
 <details>
-  <summary>Running Vectr in a **Docker Container**</summary>
+  <summary>Running Vectr in a Docker Container</summary>
 
   1. **Clone the Repository**:
      ```bash
@@ -43,7 +43,7 @@
 </details>
 
 <details>
-  <summary>Running Vectr in a **Virtual Environment (venv)**</summary>
+  <summary>Running Vectr in a Virtual Environment (venv)</summary>
 
   1. **Clone the Repository**:
      ```bash
