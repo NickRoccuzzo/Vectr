@@ -167,7 +167,7 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
 - **📈 Line Graphs for Highest Open Interest Contracts 📉**:
   - Line graphs are plotted using the **specific Call & Put contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers **most significant**.
-  - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call/Put contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
+  - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call contract & **$5** Put contract have the highest Open Interest, those will be graphed as the key data points for that expiration.
 
 - **⚖️ Weighted Average Line Graph ⚖️**:
   - This graph provides an "average" view of the market's activity, weighted by Open Interest.
