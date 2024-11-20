@@ -182,3 +182,5 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
   - These metrics provide insights into the type of flow the chain is experiencing, helping users determine whether sentiment is more **bullish** or **bearish**.
 
 By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
+
+<p><b><span style="color:red;">WARNING: Not financial advice</span></b></p>
