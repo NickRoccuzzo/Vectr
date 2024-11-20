@@ -155,7 +155,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 The Vectr platform provides a suite of dynamic and interactive visualizations to help users analyze stock options data effectively. Here's what the visualizations include:
 
 - **💲 Current Price Line 💲**:
-  - A horizontal line is plotted on the graph to represent the current price of the stock.
+  - A bright blue horizontal line is plotted on the graph to represent the current price of the stock.
   - This helps users quickly see where the current price stands relative to the available options data.
 
 - **📊 Bar Graphs for Open Interest (OI) 📊**:
