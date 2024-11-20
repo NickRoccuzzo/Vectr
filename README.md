@@ -175,7 +175,7 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
  
-- **🐂Net Call/Put Premium & Net Call/Put Volume🐻**:
+- **🐂 Net Call/Put Premium & Volume 🐻**:
   - Two annotations in the top-left corner of the Plotly graph display these aggregate values:
     - **Premium**: The total dollar amount spent across the option chain at the time of the query.
     - **Volume**: The total number of contracts purchased at the time of the query.
