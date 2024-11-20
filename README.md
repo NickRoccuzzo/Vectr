@@ -142,5 +142,34 @@ From here, you can search a singular ticker or multiple tickers, either comma or
 Here's a sample of the option chain pulled for AAPL stock:
 ![image](https://github.com/user-attachments/assets/1bf826ca-b889-43fa-9852-6d15e89298a3)
 
-Here's some further detail on data is visualized for you:
+... Along with a further breakdown of what exactly the graphs are showing to the end user:
 ![image](https://github.com/user-attachments/assets/081ed27e-ab4a-4a4a-8279-101ae1ba14a4)
+
+### Data Visualizations and Insights
+
+The Vectr platform provides a suite of dynamic and interactive visualizations to help users analyze stock options data effectively. Here's what the visualizations include:
+
+- **Current Price Line**:
+  - A horizontal line is plotted on the graph to represent the current price of the stock.
+  - This helps users quickly see where the current price stands relative to the available options data.
+
+- **Bar Graphs for Open Interest (OI)**:
+  - Visualize the Open Interest (OI)—the number of contracts currently open for each strike price.
+  - Users can hover over each bar to see detailed **Call/Put ratios**.
+  - Outliers are immediately visible, drawing attention to strike prices with unusually high activity.
+
+- **Line Graphs for Highest Open Interest Contracts**:
+  - Line graphs are plotted for the **specific contracts with the highest Open Interest** at each expiration date.
+  - These data points reflect the strike prices that the market considers most significant.
+  - For instance, if strike prices are $5, $10, $15, and $20, and the $10 contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
+
+- **Weighted Average Line Graph**:
+  - This graph provides an "average" view of the market's activity, weighted by Open Interest.
+  - Strike prices with higher Open Interest have a greater impact on this line, giving users a clearer sense of market sentiment.
+  - Example: If 100 Call contracts are bought at a $100 strike price, and 30 Put contracts are bought at a $50 strike price, the average line will slightly favor the Call options, resulting in an upward movement.
+
+- **Dynamic Highlights for Key Data Points**:
+  - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
+  - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
+
+By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
