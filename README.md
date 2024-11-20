@@ -13,7 +13,7 @@
 ------------
 
 
-### How It Works
+### ⚙️ How It Works
 
 <details>
   <summary>Running Vectr in a **Docker Container**</summary>
