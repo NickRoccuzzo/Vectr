@@ -146,7 +146,7 @@ Here's a sample of the option chain pulled for AAPL stock:
 
 ... Along with a further breakdown of what data & insight the graphs will be providing to the end user:
 
-(NOTE: You can hover over almost any data point on the graphs to gain further info)
+(NOTE: You can hover over most data points on the graphs to gain further info)
 ![image](https://github.com/user-attachments/assets/081ed27e-ab4a-4a4a-8279-101ae1ba14a4)
 
 ------------
