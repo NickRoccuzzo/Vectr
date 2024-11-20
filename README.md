@@ -130,11 +130,12 @@
 ------------
 
 
-Once you've successfully completed the prior step of your choice and access the web application, you will reach the home page:
+Once you've successfully completed the steps of your choice and access the web application, you will reach the home page:
 
 ![GitHubPicture1_Search_Tickers](https://github.com/user-attachments/assets/cd802404-624d-4f67-8fee-3f6cb3928ed8)
 
-From here, you can search a singular ticker or multiple tickers, either comma or space separated.  You can then hit 'Enter' or press the 'Search' button to extract the option chain data
+From here, you can either search a singular ticker or multiple tickers.  You can separate them with commas, spaces, or both.  
+You can then hit 'Enter' or press the 'Search' button to extract the option chain data
 
 ![GitHubPicture2_Search_Tickers_Cont](https://github.com/user-attachments/assets/9a017fa5-f778-4841-97dc-97d072ea6e66)
 
@@ -142,33 +143,35 @@ From here, you can search a singular ticker or multiple tickers, either comma or
 Here's a sample of the option chain pulled for AAPL stock:
 ![image](https://github.com/user-attachments/assets/1bf826ca-b889-43fa-9852-6d15e89298a3)
 
-... Along with a further breakdown of what exactly the graphs are showing to the end user:
+... Along with a further breakdown of what data & insight the graphs will be providing to the end user:
 ![image](https://github.com/user-attachments/assets/081ed27e-ab4a-4a4a-8279-101ae1ba14a4)
+
+------------
 
 ### Data Visualizations and Insights
 
 The Vectr platform provides a suite of dynamic and interactive visualizations to help users analyze stock options data effectively. Here's what the visualizations include:
 
-- **Current Price Line**:
+- **💲 Current Price Line 💲**:
   - A horizontal line is plotted on the graph to represent the current price of the stock.
   - This helps users quickly see where the current price stands relative to the available options data.
 
-- **Bar Graphs for Open Interest (OI)**:
+- **📊 Bar Graphs for Open Interest (OI) 📊**:
   - Visualize the Open Interest (OI)—the number of contracts currently open for each strike price.
   - Users can hover over each bar to see detailed **Call/Put ratios**.
   - Outliers are immediately visible, drawing attention to strike prices with unusually high activity.
 
-- **Line Graphs for Highest Open Interest Contracts**:
+- ** 📈 Line Graphs for Highest Open Interest Contracts 📉**:
   - Line graphs are plotted for the **specific contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers most significant.
   - For instance, if strike prices are $5, $10, $15, and $20, and the $10 contract has the highest Open Interest, it will be graphed as the key data point for that expiration.
 
-- **Weighted Average Line Graph**:
+- **⚖️ Weighted Average Line Graph ⚖️**:
   - This graph provides an "average" view of the market's activity, weighted by Open Interest.
   - Strike prices with higher Open Interest have a greater impact on this line, giving users a clearer sense of market sentiment.
   - Example: If 100 Call contracts are bought at a $100 strike price, and 30 Put contracts are bought at a $50 strike price, the average line will slightly favor the Call options, resulting in an upward movement.
 
-- **Dynamic Highlights for Key Data Points**:
+- **🟩 Dynamic Highlights for Key Data Points 🟥**:
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
 
