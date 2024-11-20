@@ -31,7 +31,7 @@
 
   3. **Run the Docker Container**:
      ```bash
-     docker run -p 5000:5000 vectr-app
+     docker run -d -p 5000:5000 vectr-app
      ```
 
   4. **Access the Application**:
