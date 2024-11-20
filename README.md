@@ -13,27 +13,70 @@
 ------------
 
 
-**⚙️ How It Works**
+### How It Works
+
+<details>
+  <summary>Running Vectr in a Docker Container</summary>
 
   1. **Clone the Repository**:
      ```bash
-     git clone https://github.com/NickRoccuzzo/Vectr.git
+     git clone https://github.com/YourUsername/Vectr.git
      cd Vectr
      ```
 
-  2. **Install Dependencies**:
+  2. **Build the Docker Image**:
+     ```bash
+     docker build -t vectr-app .
+     ```
+
+  3. **Run the Docker Container**:
+     ```bash
+     docker run -p 5000:5000 vectr-app
+     ```
+
+  4. **Access the Application**:
+     - Open your browser and navigate to:
+       ```
+       http://127.0.0.1:5000
+       ```
+
+</details>
+
+<details>
+  <summary>Running Vectr in a Virtual Environment (venv)</summary>
+
+  1. **Clone the Repository**:
+     ```bash
+     git clone https://github.com/YourUsername/Vectr.git
+     cd Vectr
+     ```
+
+  2. **Create and Activate a Virtual Environment**:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate  # On Linux/Mac
+     .\venv\Scripts\activate   # On Windows
+     ```
+
+  3. **Install Dependencies**:
      ```bash
      pip install -r requirements.txt
      ```
 
-  3. **Run the Flask Application**:
+  4. **Run the Flask Application**:
      ```bash
      python FlaskAppVectr.py
      ```
-     
-  4. **Access the Interface**:
-Open your web browser of choice and navigate to:  
+
+  5. **Access the Application**:
+     - Open your browser and navigate to:
+       ```
+       http://127.0.0.1:5000
+       ```
+
+  6. **Deactivate the Virtual Environment (when done)**:
      ```bash
-     http://127.0.0.1:5000
-     ``` 
-	 
+     deactivate
+     ```
+
+</details>
