@@ -7,3 +7,21 @@
 - *Dynamic Visualizations*: Generate interactive line graphs, bar graphs, and other visual enhancements to analyze options chains.
 - *Market Insights*: Assess whether the market sentiment for a stock is bullish or bearish based on its options data.
 
+**How It Works**
+
+  1. **Clone the Repository**:
+     Run the following commands:
+     ```bash
+     git clone https://github.com/YourUsername/Vectr.git
+     cd Vectr
+     ```
+
+  2. **Install Dependencies**:
+     ```bash
+     pip install -r requirements.txt
+     ```
+
+  3. **Run the Flask Application**:
+     ```bash
+     python FlaskAppVectr.py
+     ```
