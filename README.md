@@ -183,5 +183,11 @@ The Vectr platform provides a suite of dynamic and interactive visualizations to
 
 By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
 
+------------
+### 🚧 Work in Progress
+
+Vectr is an ongoing project, and new features and improvements are regularly being added. Feedback is welcome as we continue to refine and enhance the application.
+
+------------
 **⚠️ WARNING: NOT FINANCIAL ADVICE ⚠️**
 
