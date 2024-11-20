@@ -10,6 +10,9 @@
 - *Market Insights*: Assess whether the market sentiment for a stock is bullish or bearish based on its options data.
 
 
+------------
+
+
 **How It Works**
 
   1. **Clone the Repository**:
@@ -27,3 +30,13 @@
      ```bash
      python FlaskAppVectr.py
      ```
+  4. **Access the Interface**:
+  
+  Open your web browser of choice and navigate to
+     ```bash
+     http://127.0.0.1:5000
+     ```
+	 You will then be taken to the main page:
+	 [image will go here]
+	 
+	 
