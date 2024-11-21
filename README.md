@@ -209,6 +209,26 @@ Here's a sample of the option chain pulled for AAPL stock:
 
 By combining these elements, Vectr ensures users can effortlessly identify trends, analyze market sentiment, and focus on the most impactful data points.
 
+------------
+
+### S&P 500 Sector Performance
+
+If the user selects the **S&P 500 Sectors** hyperlink, they'll be taken to a page displaying the performance of various sectors within the S&P 500.
+
+![image](https://github.com/user-attachments/assets/0e0f48b1-51ab-46bd-8f01-c82fca01c99a)
+
+- **Default View**:
+  - The displayed percentages initially represent the **1-day performance** for each sector.
+  - This gives users a quick snapshot of the most recent market trends.
+
+- **Customizable Timeframes**:
+  - The user can select a different timeframe from the available options (e.g., 1-week, 1-month, 1-year, etc.) to analyze which sectors are **outperforming** or **underperforming** relative to others.
+  - This feature provides flexibility to observe both short-term and long-term trends across the S&P 500 sectors.
+
+![image](https://github.com/user-attachments/assets/53738416-e6b6-4cfa-b50b-93442fdd15ce)
+
+
+This interactive page offers a clear, concise view of market performance, helping users make more informed decisions based on sector trends.
 
 ------------
 **⚠️ WARNING: NOT FINANCIAL ADVICE ⚠️**
