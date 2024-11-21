@@ -2,147 +2,150 @@
 <html lang="en">
 
 <head>
+    <!-- Meta tags and title -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - Vectr</title>
+    <title>Sectors of the S&P 500 - Vectr</title>
 
-    <!-- Link to Google Fonts -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Include the shared styles from base.css -->
+    <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
 
-    <!-- Optional: Bootstrap or additional page-specific styles -->
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-<style>
-    /* Adjust the general font size for the table and page */
-    body {
-        font-size: 14px;
-    }
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
 
-    .tables-wrapper {
-        display: flex;
-        justify-content: space-between;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
+        .etf-item {
+            display: grid;
+            grid-template-columns: 20px 250px 1fr; /* Added a column for the arrow */
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            position: relative;
+            cursor: pointer;
+        }
 
-    .bullish-section, .bearish-section {
-        border: 2px solid;
-        padding: 15px;
-        background-color: #e6ffe6;
-        flex: 1;
-        min-width: 300px;
-        text-align: center; /* Center-align the text in each section */
-    }
+        .etf-item .arrow {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            align-self: center;
+            justify-self: center;
+        }
 
-    .bullish-section {
-        border-color: green;
-        background-color: #e6ffe6;
-    }
+        .etf-item.active .arrow {
+            transform: rotate(90deg); /* Rotate arrow when active */
+        }
 
-    .bearish-section {
-        border-color: red;
-        background-color: #ffe6e6;
-    }
+        .etf-item h3 {
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: left;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
 
-    .bullish-section h3, .bearish-section h3 {
-        font-size: 18px;
-        margin-bottom: 10px;
-        text-align: center; /* Center-align the BULLISH and BEARISH titles */
-    }
+        .sector-tag {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #6c757d;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        font-size: 13px;
-    }
+        .performance-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-    }
+        .performance-bar {
+            position: relative;
+            height: 15px;
+            min-width: 60px;
+            line-height: normal;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: width 0.5s ease;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0 0.5rem;
+        }
 
-    th {
-        background-color: #f2f2f2;
-        font-size: 14px;
-    }
+        .positive {
+            background-color: #28a745;
+            transform-origin: left;
+        }
 
-    td[contenteditable="true"] {
-        background-color: #fff;
-        outline: none;
-        cursor: text;
-        transition: background-color 0.2s ease;
-    }
+        .negative {
+            background-color: #dc3545;
+            transform-origin: right;
+        }
 
-    td[contenteditable="true"]:focus {
-        background-color: #e8f0fe;
-    }
+        /* Collapsible content */
+        .etf-content {
+            grid-column: 1 / -1;
+            display: none;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-top: -1rem;
+        }
 
-    .remove-button {
-        background: none;
-        border: none;
-        font-size: 12px;
-        cursor: pointer;
-        color: #d9534f;
-        padding: 0;
-        text-decoration: underline;
-    }
+        /* Active state for collapsible content */
+        .etf-item.active + .etf-content {
+            display: block;
+        }
 
-    .remove-button:hover {
-        color: #c9302c;
-    }
+        /* Hover effect */
+        .etf-item:hover {
+            background-color: #f1f1f1;
+        }
 
-    .action-button {
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: #007bff;
-        margin: 0 5px;
-        padding: 0;
-    }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .etf-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
 
-    .action-button:hover {
-        color: #0056b3;
-    }
+            .etf-item .arrow {
+                position: absolute;
+                right: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+            }
 
-    .save-button {
-        background-color: #28a745;
-        color: #fff;
-        border: none;
-        padding: 5px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 10px;
-        display: block;
-        text-align: center;
-        margin-left: auto;
-        margin-right: auto;
-    }
+            .performance-container {
+                width: 100%;
+            }
 
-    .save-button:hover {
-        background-color: #218838;
-    }
+            .etf-item h3 {
+                font-size: 1.2rem;
+            }
 
-    .save-button:active {
-        background-color: #1e7e34;
-    }
-
-    .save-button:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(72, 180, 97, 0.5);
-    }
-</style>
+            .performance-bar {
+                font-size: 0.9rem;
+                min-width: 50px;
+            }
+        }
+    </style>
 </head>
 
 <body class="container mt-5">
     <!-- Header with image and navigation links -->
-    <div class="center-wrapper">
+    <div class="center-wrapper text-center">
         <img src="{{ url_for('static', filename='TheNewestVectrHandII.png') }}" alt="Vectr Logo" class="title-image">
 
         <!-- Hyperlinks for navigation -->
@@ -154,221 +157,116 @@
         </div>
     </div>
 
-    <h2>About Vectr</h2>
+    <!-- Main content -->
+    <h1 class="text-center mb-4">Sectors of the S&P 500</h1>
 
-<div class="tables-wrapper">
-    <!-- Bullish Section -->
-    <div class="bullish-section">
-        <h3>BULLISH</h3>
-        <table id="bullish-table">
-            <thead>
-                <tr>
-                    <th>TICKER</th>
-                    <th>EXPIRY</th>
-                    <th>NOTES</th>
-                </tr>
-            </thead>
-            <tbody id="bullish-tbody">
-                {% for entry in options_data.bullish %}
-                <tr data-ticker="{{ entry.ticker }}">
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="ticker">{{ entry.ticker }}</td>
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="expiry">{{ entry.expiry }}</td>
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="notes">{{ entry.notes }}</td>
-                    <td>
-                        <button class="remove-button" onclick="removeTicker('{{ entry.ticker }}', 'bullish')">remove</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button class="action-button add-button" onclick="addTicker('bullish')">+</button>
+    <!-- Timeframe selection buttons -->
+    <div class="d-flex justify-content-center mb-4 flex-wrap">
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="1-day">1D</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="1-week">1W</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="1-month">1M</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="3-month">3M</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="year-to-date">YTD</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="1-year">1Y</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="5-year">5Y</button>
+        <button class="btn btn-primary mx-2 timeframe-btn" data-timeframe="max">Max</button>
     </div>
 
-    <!-- Bearish Section -->
-    <div class="bearish-section">
-        <h3>BEARISH</h3>
-        <table id="bearish-table">
-            <thead>
-                <tr>
-                    <th>TICKER</th>
-                    <th>EXPIRY</th>
-                    <th>NOTES</th>
-                </tr>
-            </thead>
-            <tbody id="bearish-tbody">
-                {% for entry in options_data.bearish %}
-                <tr data-ticker="{{ entry.ticker }}">
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="ticker">{{ entry.ticker }}</td>
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="expiry">{{ entry.expiry }}</td>
-                    <td contenteditable="true" data-ticker="{{ entry.ticker }}" data-field="notes">{{ entry.notes }}</td>
-                    <td>
-                        <button class="remove-button" onclick="removeTicker('{{ entry.ticker }}', 'bearish')">remove</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button class="action-button add-button" onclick="addTicker('bearish')">+</button>
+    <!-- ETF Performance List -->
+    <div id="etf-performance">
+        {% set etf_sectors = {
+            "XLRE": "Real Estate",
+            "XLE": "Energy",
+            "XLU": "Utilities",
+            "XLK": "Technology",
+            "XLB": "Materials",
+            "XLP": "Consumer Staples",
+            "XLY": "Consumer Discretionary",
+            "XLI": "Industrials",
+            "XLC": "Communication Services",
+            "XLV": "Health Care",
+            "XLF": "Financials"
+        } %}
+
+        {% for etf, metrics in performance.items() %}
+        <!-- ETF Item -->
+        <div class="etf-item" data-etf="{{ etf }}">
+            <!-- Arrow Indicator -->
+            <span class="arrow">&#9654;</span>
+            <h3>{{ etf }} <span class="sector-tag">({{ etf_sectors.get(etf, 'Unknown Sector') }})</span></h3>
+            <div class="performance-container">
+                <div class="performance-bar">
+                    <!-- The text remains inside the bar -->
+                    {{ performance[etf].performance_text or 'Loading...' }}
+                </div>
+            </div>
+        </div>
+        <!-- Collapsible Content -->
+        <div class="etf-content">
+            <!-- Placeholder for additional content -->
+            <p>Additional information about {{ etf }} will go here.</p>
+        </div>
+        {% endfor %}
     </div>
-</div>
 
-<!-- Single Save Button -->
-<button class="save-button" onclick="saveAllData()">Save</button>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <!-- JavaScript for dynamic updates -->
     <script>
-        // Initialize sortable for the bullish and bearish tables
-        new Sortable(document.getElementById('bullish-tbody'), {
-            animation: 150,
-            onEnd: function(evt) {
-                console.log('New order for bullish:', evt);
+        document.addEventListener("DOMContentLoaded", () => {
+            const performanceBars = document.querySelectorAll(".performance-bar");
+            const etfItems = document.querySelectorAll(".etf-item");
+
+            function updatePerformance(timeframe) {
+                fetch(`/get_performance_group?timeframe=${timeframe}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const performances = Object.values(data).map(p => Math.abs(p.performance || 0));
+                        const maxPerformance = Math.max(...performances);
+
+                        performanceBars.forEach(el => {
+                            const etfItem = el.closest('.etf-item');
+                            const etf = etfItem.getAttribute("data-etf");
+                            const performance = data[etf]?.performance;
+
+                            if (performance !== undefined && maxPerformance > 0) {
+                                const normalizedWidth = (Math.abs(performance) / maxPerformance) * 100;
+                                el.style.width = `${normalizedWidth}%`;
+
+                                const percentageText = `${performance > 0 ? '+' : ''}${performance}%`;
+                                el.textContent = percentageText;
+
+                                if (performance > 0) {
+                                    el.classList.add("positive");
+                                    el.classList.remove("negative");
+                                } else {
+                                    el.classList.add("negative");
+                                    el.classList.remove("positive");
+                                }
+                            } else {
+                                el.textContent = "Data not available";
+                                el.style.width = "60px"; // Set to min-width
+                                el.classList.remove("positive", "negative");
+                            }
+                        });
+                    });
             }
-        });
 
-        new Sortable(document.getElementById('bearish-tbody'), {
-            animation: 150,
-            onEnd: function(evt) {
-                console.log('New order for bearish:', evt);
-            }
-        });
+            updatePerformance("1-day");
 
-        function addTicker(type) {
-            const tableId = type === 'bullish' ? 'bullish-table' : 'bearish-table';
-            const tableBody = document.getElementById(tableId).querySelector('tbody');
-
-            const newRow = document.createElement('tr');
-            const newTicker = `NewTicker${Date.now()}`;
-
-            newRow.innerHTML = `
-                <td contenteditable="true" data-ticker="${newTicker}" data-field="ticker">New Ticker</td>
-                <td contenteditable="true" data-ticker="${newTicker}" data-field="expiry">New Expiry</td>
-                <td contenteditable="true" data-ticker="${newTicker}" data-field="notes">${type === 'bullish' ? '-' : 'bearish'}</td>
-                <td>
-                    <button class="remove-button" onclick="removeTicker('${newTicker}', '${type}')">remove</button>
-                </td>
-            `;
-
-            tableBody.appendChild(newRow);
-
-            fetch('/add_ticker', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ticker: newTicker,
-                    expiry: 'New Expiry',
-                    notes: type === 'bullish' ? '-' : 'bearish'
-                })
-            }).then(response => response.json())
-              .then(data => {
-                if (!data.success) {
-                    console.error('Failed to add ticker', data.error);
-                }
-            }).catch(error => console.error('Error:', error));
-
-            attachContentEditableListeners(newRow);
-        }
-
-        function removeTicker(ticker, type) {
-            console.log('Removing ticker:', ticker, 'from type:', type);
-            document.querySelector(`tr[data-ticker="${ticker}"]`).remove();
-
-            fetch('/remove_ticker', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ticker: ticker })
-            }).then(response => response.json())
-              .then(data => {
-                if (!data.success) {
-                    console.error('Failed to remove ticker:', data.error);
-                }
-            }).catch(error => console.error('Error while removing ticker:', error));
-        }
-
-function saveAllData() {
-    const dataToSave = {
-        bullish: [],
-        bearish: []
-    };
-
-    // Gather data from the bullish table
-    document.querySelectorAll('#bullish-tbody tr').forEach(row => {
-        const ticker = row.querySelector('td[data-field="ticker"]').textContent.trim();
-        const expiry = row.querySelector('td[data-field="expiry"]').textContent.trim();
-        const notes = row.querySelector('td[data-field="notes"]').textContent.trim();
-
-        dataToSave.bullish.push({
-            ticker: ticker,
-            expiry: expiry,
-            notes: notes
-        });
-    });
-
-    // Gather data from the bearish table
-    document.querySelectorAll('#bearish-tbody tr').forEach(row => {
-        const ticker = row.querySelector('td[data-field="ticker"]').textContent.trim();
-        const expiry = row.querySelector('td[data-field="expiry"]').textContent.trim();
-        const notes = row.querySelector('td[data-field="notes"]').textContent.trim();
-
-        dataToSave.bearish.push({
-            ticker: ticker,
-            expiry: expiry,
-            notes: notes
-        });
-    });
-
-    // Send the combined data to the server
-    fetch('/save_data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave)
-    }).then(response => response.json())
-      .then(data => {
-        if (data.success) {
-            console.log('All data saved successfully');
-        } else {
-            console.error('Failed to save data:', data.error);
-        }
-    }).catch(error => console.error('Error while saving data:', error));
-}
-
-        function attachContentEditableListeners(row) {
-            row.querySelectorAll('td[contenteditable=true]').forEach(cell => {
-                cell.addEventListener('blur', function() {
-                    const newValue = cell.textContent.trim();
-                    const ticker = cell.getAttribute('data-ticker');
-                    const field = cell.getAttribute('data-field');
-
-                    fetch('/update_data', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            ticker: ticker,
-                            field: field,
-                            value: newValue
-                        })
-                    }).then(response => response.json())
-                      .then(data => {
-                        if (!data.success) {
-                            console.error('Failed to update data:', data.error);
-                        }
-                    }).catch(error => console.error('Error:', error));
+            const buttons = document.querySelectorAll(".timeframe-btn");
+            buttons.forEach(button => {
+                button.addEventListener("click", () => {
+                    const selectedTimeframe = button.getAttribute("data-timeframe");
+                    updatePerformance(selectedTimeframe);
                 });
             });
-        }
 
-        document.querySelectorAll('tbody tr').forEach(row => {
-            attachContentEditableListeners(row);
+            // Toggle collapsible content
+            etfItems.forEach(item => {
+                item.addEventListener("click", () => {
+                    item.classList.toggle("active");
+                });
+            });
         });
-
-        // Listen for the 'Ctrl+S' key combination and trigger the save action
-document.addEventListener('keydown', function(event) {
-    // Check if 'Ctrl' (or 'Meta' on macOS) and 'S' are pressed simultaneously
-    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-        event.preventDefault(); // Prevent the default browser behavior (e.g., opening the browser's save dialog)
-        saveAllData(); // Call the save function
-        console.log('Ctrl+S pressed - Saving data...');
-    }
-});
     </script>
 </body>
 
