@@ -211,7 +211,7 @@ By combining these elements, Vectr ensures users can effortlessly identify trend
 
 ------------
 
-### S&P 500 Sector Performance
+### Sectors of the S&P 500
 
 If the user selects the **S&P 500 Sectors** hyperlink, they'll be taken to a page displaying the performance of various sectors within the S&P 500.
 
