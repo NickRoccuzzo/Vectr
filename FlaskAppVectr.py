@@ -9,7 +9,6 @@ from plotly.utils import PlotlyJSONEncoder
 
 app = Flask(__name__)
 
-
 # Apply security headers after every request
 @app.after_request
 def apply_security_headers(response):
@@ -23,12 +22,12 @@ def apply_security_headers(response):
 def index():
     return render_template('index.html')
 
-# ABOUT PAGE
-@app.route("/about")
-def about():
+# S&P 500 Sectors Page
+@app.route("/sp500sectors")
+def sp500sectors():
     etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF"]
     performance = get_etf_performance(etfs)
-    return render_template("about.html", performance=performance)
+    return render_template("SP500sectors.html", performance=performance)
 
 @app.route("/get_performance")
 def get_performance():
@@ -45,7 +44,6 @@ def get_performance_group():
     performance = get_etf_performance(etfs)
     result = {etf: {"performance": metrics.get(timeframe)} for etf, metrics in performance.items()}
     return jsonify(result)
-
 
 # CONTACT PAGE
 @app.route('/contact', methods=['GET'])
@@ -84,5 +82,5 @@ def process_ticker():
         print(error)
         return jsonify({'error': error}), 500
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
