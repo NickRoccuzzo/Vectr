@@ -177,16 +177,16 @@ Here's a sample of the option chain pulled for AAPL stock:
 
   - Line graphs are plotted using the **specific Call & Put contracts with the highest Open Interest** at each expiration date.
   - These data points reflect the strike prices that the market considers **most significant**.
-  - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call contract & **$5** Put contract have the highest Open Interest, those will be graphed as the key data points for that expiration.
+  - **For example:** If strike prices are $5, $10, $15, and $20, and the **$10** Call contract & **$5** Put contract have the highest Open Interest, those will be graphed as the key data points for that expiration date
 
 </details>
 
 <details>
   <summary>⚖️ <b>Weighted Average Line Graph</b></summary>
 
-  - This graph provides an "average" view of the market's activity, weighted by Open Interest.
+  - This graph provides an "average" line between the most active Call and Put for a given expiration date, weighted by Open Interest.
   - Strike prices with higher Open Interest have a greater impact on this line, giving users a clearer sense of market sentiment.
-  - Example: If 100 Call contracts are bought at a $100 strike price, and 30 Put contracts are bought at a $50 strike price, the average line will slightly favor the Call options, resulting in an upward movement.
+  - Example: If **100** Call contracts are bought at a $100 strike price, and **30** Put contracts are bought at a $50 strike price, the average line will slightly favor the Call options, resulting in the average line favoring an upward movement.
 
 </details>
 
