@@ -225,7 +225,8 @@ If the user selects the **S&P 500 Sectors** hyperlink, they'll be taken to a pag
   - The user can select a different timeframe from the available options (e.g., 1-week, 1-month, 1-year, etc.) to analyze which sectors are **outperforming** or **underperforming** relative to others.
   - This feature provides flexibility to observe both short-term and long-term trends across the S&P 500 sectors.
 
-![image](https://github.com/user-attachments/assets/53738416-e6b6-4cfa-b50b-93442fdd15ce)
+![image](https://github.com/user-attachments/assets/eb1c45ff-5093-4427-96b9-d4e93de0f4c2)
+
 
 
 This interactive page offers a clear, concise view of market performance, helping users make more informed decisions based on sector trends.
