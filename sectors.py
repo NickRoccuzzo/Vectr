@@ -56,5 +56,5 @@ def get_etf_performance(etfs):
     return performance
 
 if __name__ == "__main__":
-    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF"]
+    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF", "XBI"]
     print(get_etf_performance(etfs))
