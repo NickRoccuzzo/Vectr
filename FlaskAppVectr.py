@@ -25,7 +25,7 @@ def index():
 # S&P 500 Sectors Page
 @app.route("/sp500sectors")
 def sp500sectors():
-    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF"]
+    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF", "XBI"]
     performance = get_etf_performance(etfs)
     return render_template("SP500sectors.html", performance=performance)
 
@@ -40,7 +40,7 @@ def get_performance():
 @app.route("/get_performance_group")
 def get_performance_group():
     timeframe = request.args.get("timeframe")
-    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF"]
+    etfs = ["XLRE", "XLE", "XLU", "XLK", "XLB", "XLP", "XLY", "XLI", "XLC", "XLV", "XLF", "XBI"]
     performance = get_etf_performance(etfs)
     result = {etf: {"performance": metrics.get(timeframe)} for etf, metrics in performance.items()}
     return jsonify(result)
