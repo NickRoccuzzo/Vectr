@@ -167,7 +167,7 @@ Here's a sample of the option chain pulled for AAPL stock:
   <summary>📊 <b>Bar Graphs for Open Interest (OI)</b></summary>
 
   - For each expiration date, the cumulative Open Interest (OI) for both **Call** and **Put** contracts are visualized with green & red bar graphs
-  - Users can hover over any of the bars across the entire graph to see the exact total of OI for either **Calls** or **Puts** for a particular expiration date
+  - Users can hover over any of the bars across the entire graph to see the # of OI for either **Calls** or **Puts** for a particular expiration date.
   - Outliers are immediately visible, drawing attention to expiration dates with an unusual amount of interest in one side or the other.
 
 </details>
