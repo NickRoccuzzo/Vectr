@@ -132,7 +132,8 @@
 
 Once you've successfully completed the steps of your choice and access the web application, you will reach the home page:
 
-![GitHubPicture1_Search_Tickers](https://github.com/user-attachments/assets/cd802404-624d-4f67-8fee-3f6cb3928ed8)
+![image](https://github.com/user-attachments/assets/64cb39dc-1022-40de-8c58-fa4e2738d34f)
+
 
 From here, you can either search a singular ticker or multiple tickers.  
 Tickers can be separated with commas, spaces, or both.  You can then hit 'Enter' or press the 'Search' button to extract the option chain data
