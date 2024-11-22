@@ -194,6 +194,8 @@ Here's a sample of the option chain pulled for AAPL stock:
   <summary>🟩 <b>Dynamic Highlights for Key Data Points</b></summary>
 
   - Each data point with the highest Open Interest is marked with **dynamic squares** to catch the user's eye.
+  - The larger the square is, the higher the Open Interest is for that particular strike.
+  - These squares are dynamically sized in relation to the ***entire*** option chain.
   - These highlights make it easy to spot which contracts or expiration dates are experiencing significant market activity.
 
 </details>
