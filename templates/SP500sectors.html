@@ -5,10 +5,10 @@
     <!-- Meta tags and title -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sectors of the S&P 500 - Vectr</title>
+    <title>S&amp;P 500 Sectors - Vectr</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 
     <!-- Base CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
@@ -21,11 +21,25 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        /* Title styling */
+        .page-title {
+            font-size: 2rem;
+            font-style: italic;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Grid container for ETFs */
+        .etf-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
         .etf-item {
             display: grid;
-            grid-template-columns: 20px 250px 1fr; /* Added a column for the arrow */
+            grid-template-columns: 20px 1fr 1fr;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0;
             gap: 1rem;
             position: relative;
             cursor: pointer;
@@ -39,7 +53,7 @@
         }
 
         .etf-item.active .arrow {
-            transform: rotate(90deg); /* Rotate arrow when active */
+            transform: rotate(90deg);
         }
 
         .etf-item h3 {
@@ -94,7 +108,7 @@
 
         /* Collapsible content */
         .etf-content {
-            grid-column: 1 / -1;
+            grid-column: span 2;
             display: none;
             padding: 1rem;
             background-color: #f8f9fa;
@@ -115,6 +129,10 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
+            .etf-grid {
+                grid-template-columns: 1fr;
+            }
+
             .etf-item {
                 grid-template-columns: 1fr;
                 gap: 0.5rem;
@@ -139,6 +157,11 @@
                 font-size: 0.9rem;
                 min-width: 50px;
             }
+
+            /* Collapsible content spans all columns */
+            .etf-content {
+                grid-column: 1;
+            }
         }
     </style>
 </head>
@@ -157,8 +180,8 @@
         </div>
     </div>
 
-    <!-- Main content -->
-    <h1 class="text-center mb-4">Sectors of the S&P 500</h1>
+    <!-- Updated Main Heading -->
+    <h1 class="text-center mb-4 page-title">Sectors of the S&amp;P 500</h1>
 
     <!-- Timeframe selection buttons -->
     <div class="d-flex justify-content-center mb-4 flex-wrap">
@@ -173,7 +196,7 @@
     </div>
 
     <!-- ETF Performance List -->
-    <div id="etf-performance">
+    <div id="etf-performance" class="etf-grid">
         {% set etf_sectors = {
             "XLRE": "Real Estate",
             "XLE": "Energy",
@@ -185,7 +208,8 @@
             "XLI": "Industrials",
             "XLC": "Communication Services",
             "XLV": "Health Care",
-            "XLF": "Financials"
+            "XLF": "Financials",
+            "XBI": "Biotech"
         } %}
 
         {% for etf, metrics in performance.items() %}
