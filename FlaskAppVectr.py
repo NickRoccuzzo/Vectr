@@ -131,3 +131,6 @@ def process_ticker():
         error = f"An error occurred while processing {ticker}: {e}"
         print(error)
         return jsonify({'error': error}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
