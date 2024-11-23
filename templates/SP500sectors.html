@@ -163,6 +163,24 @@
                 grid-column: 1;
             }
         }
+        /* Styles for the holdings table */
+        .holdings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .holdings-table th, .holdings-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.3rem;
+            text-align: left;
+        }
+
+        .holdings-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -227,8 +245,12 @@
         </div>
         <!-- Collapsible Content -->
         <div class="etf-content">
-            <!-- Placeholder for additional content -->
-            <p>Additional information about {{ etf }} will go here.</p>
+            <!-- Display Holdings Data -->
+            {% if 'Holdings data is being updated' in holdings_data.get(etf) %}
+        <p>Holdings data is being updated. Please refresh the page in a few moments.</p>
+    {% else %}
+        {{ holdings_data.get(etf) | safe }}
+    {% endif %}
         </div>
         {% endfor %}
     </div>
