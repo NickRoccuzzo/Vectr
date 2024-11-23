@@ -217,7 +217,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     # Sort contracts by volume and configure how many you'd like to display on the plotly graph as annotations
     top_volume_contracts.sort(key=lambda x: x['volume'], reverse=True)
     # Most active options:
-    top_volume_contracts = top_volume_contracts[:4]  # <-- toggle this value to change the # of 'Most Active' Options
+    top_volume_contracts = top_volume_contracts[:6]  # <-- toggle this value to change the # of 'Most Active' Options
 
     fig = go.Figure()
 
@@ -299,7 +299,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         line=dict(color='#75f542', width=1.80),
         marker=dict(
             size=[
-                (df['openInterest'].max() / max_open_interest * 20) if not df.empty else 5
+                (df['openInterest'].fillna(
+                    0).max() / max_open_interest * 20) if not df.empty and max_open_interest > 0 else 5
                 for df in calls_data.values()
             ],
             color='#75f542',  # Marker color
@@ -312,7 +313,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
         ),
         customdata=[
-            (df['volume'].max(), df['openInterest'].max()) if not df.empty else (0, 0)
+            (df['volume'].fillna(0).max() if 'volume' in df.columns and not df.empty else 0,
+             df['openInterest'].fillna(0).max() if 'openInterest' in df.columns and not df.empty else 0)
             for df in calls_data.values()
         ]
     ))
@@ -330,7 +332,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         line=dict(color='#f54242', width=1.80),
         marker=dict(
             size=[
-                (df['openInterest'].max() / max_open_interest * 20) if not df.empty else 5
+                (df['openInterest'].fillna(
+                    0).max() / max_open_interest * 20) if not df.empty and max_open_interest > 0 else 5
                 for df in puts_data.values()
             ],
             color='#de3557',  # Marker color
@@ -343,7 +346,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
         ),
         customdata=[
-            (df['volume'].max(), df['openInterest'].max()) if not df.empty else (0, 0)
+            (df['volume'].fillna(0).max() if 'volume' in df.columns and not df.empty else 0,
+             df['openInterest'].fillna(0).max() if 'openInterest' in df.columns and not df.empty else 0)
             for df in puts_data.values()
         ]
     ))
