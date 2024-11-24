@@ -77,7 +77,7 @@ def sp500sectors():
         else:
             holdings_data[etf] = '<p>Holdings data is being updated. Please refresh the page in a few moments.</p>'
 
-    return render_template("SP500Sectors.html", performance=performance, holdings_data=holdings_data)
+    return render_template("SP500sectors.html", performance=performance, holdings_data=holdings_data)
 
 @app.route("/get_performance")
 def get_performance():
