@@ -232,6 +232,7 @@ If the user selects the **S&P 500 Sectors** hyperlink, they'll be taken to a pag
 
 - **ETF Holdings View**:
   - The user can also select any of the ETFs displayed as well to view the **Top 10 Holdings** of that particular ETF, along with the weighting of each holding:
+
 ![image](https://github.com/user-attachments/assets/de20ff7a-cb26-40ee-b3aa-79e5e348fc1e)
 
 
