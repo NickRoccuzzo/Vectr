@@ -217,7 +217,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     # Sort contracts by volume and configure how many you'd like to display on the plotly graph as annotations
     top_volume_contracts.sort(key=lambda x: x['volume'], reverse=True)
     # Most active options:
-    top_volume_contracts = top_volume_contracts[:6]  # <-- toggle this value to change the # of 'Most Active' Options
+    top_volume_contracts = top_volume_contracts[:4]  # <-- toggle this value to change the # of 'Most Active' Options
 
     fig = go.Figure()
 
@@ -296,7 +296,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         opacity=0.55,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#75f542', width=1.80),
+        line=dict(color='#75f542', width=1.95),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -313,10 +313,25 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
         ),
         customdata=[
-            (df['volume'].fillna(0).max() if 'volume' in df.columns and not df.empty else 0,
-             df['openInterest'].fillna(0).max() if 'openInterest' in df.columns and not df.empty else 0)
-            for df in calls_data.values()
+            (sorted_calls.iloc[0]['volume'], sorted_calls.iloc[0]['openInterest']) if not sorted_calls.empty else (0, 0)
+            for sorted_calls in [
+                pd.read_csv(os.path.join(calls_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
+                for filename in os.listdir(calls_dir)
+            ]
         ]
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=list(second_max_strike_calls.keys()),
+        y=list(second_max_strike_calls.values()),
+        name='2nd Most-Bought Call',
+        mode='lines',
+        marker_color='#42f554',
+        opacity=.40,
+        line=dict(width=1.65),
+        yaxis='y2',
+        showlegend=False,
+        hovertemplate='%{y:.2f}<extra></extra>'
     ))
 
     # Add line plot for max strike puts with scaled markers
@@ -329,7 +344,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         opacity=0.55,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#f54242', width=1.80),
+        line=dict(color='#f54242', width=1.95),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -346,10 +361,25 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             '<b>OI:</b> %{customdata[1]:,}</span><extra></extra>'
         ),
         customdata=[
-            (df['volume'].fillna(0).max() if 'volume' in df.columns and not df.empty else 0,
-             df['openInterest'].fillna(0).max() if 'openInterest' in df.columns and not df.empty else 0)
-            for df in puts_data.values()
+            (sorted_puts.iloc[0]['volume'], sorted_puts.iloc[0]['openInterest']) if not sorted_puts.empty else (0, 0)
+            for sorted_puts in [
+                pd.read_csv(os.path.join(puts_dir, filename)).sort_values(by='openInterest', ascending=False).fillna(0)
+                for filename in os.listdir(puts_dir)
+            ]
         ]
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=list(second_max_strike_puts.keys()),
+        y=list(second_max_strike_puts.values()),
+        name='2nd Most-Bought Put',
+        mode='lines',
+        marker_color='#d18686',
+        opacity=.40,
+        line=dict(width=1.65),
+        yaxis='y2',
+        showlegend=False,
+        hovertemplate='%{y:.2f}<extra></extra>'
     ))
 
     # Calculate total Volume for calls
