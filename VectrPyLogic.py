@@ -140,6 +140,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     puts_oi = {date: df['openInterest'].sum() for date, df in puts_data.items()}
     max_strike_calls, max_strike_puts = {}, {}
     second_max_strike_calls, second_max_strike_puts = {}, {}
+    third_max_strike_calls, third_max_strike_puts = {}, {}
     avg_strike = {}
     top_volume_contracts = []
 
@@ -156,6 +157,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             sorted_calls = df.sort_values(by='openInterest', ascending=False)
             max_strike_calls[date] = sorted_calls.iloc[0]['strike'] if not sorted_calls.empty else 0
             second_max_strike_calls[date] = sorted_calls.iloc[1]['strike'] if len(sorted_calls) > 1 else 0
+            third_max_strike_calls[date] = sorted_calls.iloc[2]['strike'] if len(sorted_calls) > 2 else 0
 
             # Identify the call option with the highest volume
             if df['volume'].notna().any():
@@ -176,10 +178,11 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     # Process sorted puts data
     for date, df in puts_data.items():
         if not df.empty:
-            # Calculate strikes with highest open interest
+            # Calculate strikes with the highest open interest
             sorted_puts = df.sort_values(by='openInterest', ascending=False)
             max_strike_puts[date] = sorted_puts.iloc[0]['strike'] if not sorted_puts.empty else 0
             second_max_strike_puts[date] = sorted_puts.iloc[1]['strike'] if len(sorted_puts) > 1 else 0
+            third_max_strike_puts[date] = sorted_puts.iloc[2]['strike'] if len(sorted_puts) > 2 else 0
 
             # Identify the put option with the highest volume
             if df['volume'].notna().any():
@@ -205,11 +208,13 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             weight_puts = puts_oi[date] / total_oi if total_oi else 0
 
             avg_strike[date] = (
-                (max_strike_calls[date] * weight_calls +
-                 second_max_strike_calls[date] * weight_calls +
-                 max_strike_puts[date] * weight_puts +
-                 second_max_strike_puts[date] * weight_puts) /
-                (2 * (weight_calls + weight_puts))
+                    (max_strike_calls[date] * weight_calls +
+                     second_max_strike_calls[date] * weight_calls +
+                     third_max_strike_calls[date] * weight_calls +  #
+                     max_strike_puts[date] * weight_puts +
+                     second_max_strike_puts[date] * weight_puts +
+                     third_max_strike_puts[date] * weight_puts) /  #
+                    (3 * (weight_calls + weight_puts))
             )
         else:
             avg_strike[date] = np.nan
@@ -296,7 +301,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         opacity=0.55,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#75f542', width=1.95),
+        line=dict(color='#75f542', width=2.25),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -326,9 +331,22 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         y=list(second_max_strike_calls.values()),
         name='2nd Most-Bought Call',
         mode='lines',
-        marker_color='#42f554',
+        marker_color='#57f542',
         opacity=.40,
-        line=dict(width=1.65),
+        line=dict(width=1.90),
+        yaxis='y2',
+        showlegend=False,
+        hovertemplate='%{y:.2f}<extra></extra>'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=list(third_max_strike_calls.keys()),
+        y=list(third_max_strike_calls.values()),
+        name='3rd Most-Bought Call',
+        mode='lines',
+        marker_color='#25f74f',
+        opacity=.32,
+        line=dict(width=1.40),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -344,7 +362,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         opacity=0.55,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#f54242', width=1.95),
+        line=dict(color='#f54242', width=2.25),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -374,9 +392,22 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         y=list(second_max_strike_puts.values()),
         name='2nd Most-Bought Put',
         mode='lines',
-        marker_color='#d18686',
+        marker_color='#d16262',
         opacity=.40,
-        line=dict(width=1.65),
+        line=dict(width=1.90),
+        yaxis='y2',
+        showlegend=False,
+        hovertemplate='%{y:.2f}<extra></extra>'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=list(third_max_strike_puts.keys()),
+        y=list(third_max_strike_puts.values()),
+        name='3rd Most-Bought Put',
+        mode='lines',
+        marker_color='#d17b7b',
+        opacity=.32,
+        line=dict(width=1.40),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -567,15 +598,15 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     # Update layout with consistent settings
     fig.update_layout(
         title=dict(
-            text=f'{ticker} - ${current_price:.2f}<br><span style="font-size:15px; line-height:0.4;">({company_name})</span>',
+            text=f'{ticker} - ${current_price:.2f}<br><span style="font-size:14px; line-height:0.4;">({company_name})</span>',
             x=0.5,
-            y=0.95,
+            y=0.96,
             xanchor='center',
             yanchor='top',
             font=dict(size=30, family='Arial, sans-serif', color='#01234a', style='italic')
         ),
         legend=dict(
-            x=0.5, y=1.1,
+            x=0.5, y=1.08,
             xanchor='center', yanchor='top',
             font=dict(size=10, family='Arial, sans-serif', style='italic'),
             orientation='h',
