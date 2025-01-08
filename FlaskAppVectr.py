@@ -118,7 +118,7 @@ def process_ticker():
 
     try:
         save_options_data(ticker)
-        fig = calculate_and_visualize_data(ticker, width=1200, height=525)
+        fig = calculate_and_visualize_data(ticker, width=1200, height=540)
         graph_json = json.dumps(fig, cls=PlotlyJSONEncoder)
 
         # Clean up the temporary data directories
