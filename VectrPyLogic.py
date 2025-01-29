@@ -9,20 +9,18 @@ import yfinance as yf
 
 def save_options_data(ticker):
     """
-    This function retrieves option chain data for the specified stock ticker(s) using the - yfinance library -.
-    It then saves this data to CSV files in temporary directories created for each ticker.
-    Each ticker's directory will have subfolders.  One for CALLS and one for PUTS
-    Option data from yfinance is structured naturally like a dataframe with row/column data
+    This function is responsible for retrieving option chain data using * yfinance *
+    Each ticker gets assigned its own folder, which also contains 2 subfolders ( /CALLS/ and /PUTS/ )
+    Each expiration date within the given ticker(s) option chain is iterated over to extract all available contracts
 
     + Parameters:
     ticker (str): The stock ticker symbol for which to fetch option chain data.
-    (If searching multiple tickers, they must be comma separated)
     """
 
-    # Get the current working directory
+    # First, get the current working directory
     base_dir = os.getcwd()
 
-    # Create a directory for the specific ticker if it doesn't exist
+    # Create a 'ticker folder' for the specific ticker(s), only if they don't already exist
     ticker_dir = os.path.join(base_dir, ticker)
     if not os.path.exists(ticker_dir):
         os.makedirs(ticker_dir)
@@ -83,6 +81,11 @@ def preprocess_dates(data_dir, file_suffix):
     - dict: A dictionary with formatted dates as keys and corresponding DataFrames as values.
     """
     sorted_data = {}
+
+    # 'zoneinfo' extracts the operating system's timezone (Python 3.9+ necessary here)
+    local_time = datetime.now().astimezone()  # "local" time
+    local_tz = local_time.tzinfo  # local timezone object
+
     for filename in os.listdir(data_dir):
         if filename.endswith(file_suffix + ".csv"):
             # Extract the date from the filename
@@ -95,6 +98,14 @@ def preprocess_dates(data_dir, file_suffix):
                 # Load the CSV and store in the dictionary
                 df = pd.read_csv(os.path.join(data_dir, filename))
                 if not df.empty:
+                    df["strike"] = pd.to_numeric(df["strike"], errors="coerce")
+                    df["openInterest"] = pd.to_numeric(df["openInterest"], errors="coerce")
+                    df["volume"] = pd.to_numeric(df["volume"], errors="coerce")
+                    df["lastPrice"] = pd.to_numeric(df["lastPrice"], errors="coerce")
+
+                    # Convert lastTradeDate to datetime and then to EST
+                    df["lastTradeDate"] = pd.to_datetime(df["lastTradeDate"], format="%Y-%m-%d %H:%M:%S%z", utc=True, errors="coerce")
+                    df["lastTradeDate_Local"] = df["lastTradeDate"].dt.tz_convert(local_tz)
                     sorted_data[formatted_date] = df
 
             except ValueError as e:
@@ -126,6 +137,22 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     Function that analyzes option chain data and generates Plotly visualizations for the given stock ticker(s).
     """
 
+    # Fetch current stock data using yfinance
+    stock = yf.Ticker(ticker)
+    current_data = stock.history(period="1d")
+    current_price = current_data['Close'].iloc[-1]  # Current closing price of the stock
+    price_data = stock.history(period="2d")
+    company_name = stock.info.get('longName', 'N/A')  # Retrieve company name
+
+    # Safely compute the daily change percentage if there's at least 2 rows
+    if len(price_data) > 1:
+        prev_close = price_data['Close'].iloc[-2]
+        daily_change_dollar = current_price - prev_close
+        daily_change_pct = (daily_change_dollar / prev_close) * 100
+    else:
+        daily_change_dollar = 0
+        daily_change_pct = 0
+
     # Get the current working directory and construct paths for call and put data
     base_dir = os.getcwd()
     calls_dir = os.path.join(base_dir, ticker, "CALLS")
@@ -144,11 +171,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     avg_strike = {}
     top_volume_contracts = []
 
-    # Fetch current stock data using yfinance
-    stock = yf.Ticker(ticker)
-    current_data = stock.history(period="1d")
-    current_price = current_data['Close'].iloc[-1]  # Current closing price of the stock
-    company_name = stock.info.get('longName', 'N/A')  # Retrieve company name
+    local_time = datetime.now().astimezone()
+    today_local_date = local_time.date()
 
     # Process sorted calls data
     for date, df in calls_data.items():
@@ -162,18 +186,25 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             # Identify the call option with the highest volume
             if df['volume'].notna().any():
                 highest_volume_call = df.loc[df['volume'].idxmax()]
-                total_spent = highest_volume_call['volume'] * highest_volume_call['lastPrice'] * 100
-                formatted_total_spent = format_dollar_amount(total_spent)
 
-                # Append top volume contract details
-                top_volume_contracts.append({
-                    'type': 'CALL',
-                    'strike': highest_volume_call['strike'],
-                    'volume': highest_volume_call['volume'],
-                    'openInterest': highest_volume_call['openInterest'],
-                    'date': date,
-                    'total_spent': formatted_total_spent
-                })
+                # Check lastTradeDate_EST
+                last_trade_local = highest_volume_call["lastTradeDate_Local"]
+                if pd.notnull(last_trade_local):
+                    if last_trade_local.date() == today_local_date:
+                        # It's traded "today" in EST, so we consider it "top volume"
+                        total_spent = highest_volume_call['volume'] * highest_volume_call['lastPrice'] * 100
+                        formatted_total_spent = format_dollar_amount(total_spent)
+                        unusual = highest_volume_call['volume'] > highest_volume_call['openInterest']
+
+                        top_volume_contracts.append({
+                            'type': 'CALL',
+                            'strike': highest_volume_call['strike'],
+                            'volume': highest_volume_call['volume'],
+                            'openInterest': highest_volume_call['openInterest'],
+                            'date': date,
+                            'total_spent': formatted_total_spent,
+                            'unusual': unusual
+                        })
 
     # Process sorted puts data
     for date, df in puts_data.items():
@@ -187,18 +218,23 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             # Identify the put option with the highest volume
             if df['volume'].notna().any():
                 highest_volume_put = df.loc[df['volume'].idxmax()]
-                total_spent = highest_volume_put['volume'] * highest_volume_put['lastPrice'] * 100
-                formatted_total_spent = format_dollar_amount(total_spent)
 
-                # Append top volume contract details
-                top_volume_contracts.append({
-                    'type': 'PUT',
-                    'strike': highest_volume_put['strike'],
-                    'volume': highest_volume_put['volume'],
-                    'openInterest': highest_volume_put['openInterest'],
-                    'date': date,
-                    'total_spent': formatted_total_spent
-                })
+                last_trade_local = highest_volume_put["lastTradeDate_Local"]
+                if pd.notnull(last_trade_local):
+                    if last_trade_local.date() == today_local_date:
+                        total_spent = highest_volume_put['volume'] * highest_volume_put['lastPrice'] * 100
+                        formatted_total_spent = format_dollar_amount(total_spent)
+                        unusual = highest_volume_put['volume'] > highest_volume_put['openInterest']
+
+                        top_volume_contracts.append({
+                            'type': 'PUT',
+                            'strike': highest_volume_put['strike'],
+                            'volume': highest_volume_put['volume'],
+                            'openInterest': highest_volume_put['openInterest'],
+                            'date': date,
+                            'total_spent': formatted_total_spent,
+                            'unusual': unusual
+                        })
 
     # Calculate average strike for visualization
     for date in max_strike_calls.keys():
@@ -222,7 +258,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
     # Sort contracts by volume and configure how many you'd like to display on the plotly graph as annotations
     top_volume_contracts.sort(key=lambda x: x['volume'], reverse=True)
     # Most active options:
-    top_volume_contracts = top_volume_contracts[:4]  # <-- toggle this value to change the # of 'Most Active' Options
+    top_volume_contracts = top_volume_contracts[:5]  # <-- toggle this value to change the # of 'Most Active' Options
 
     fig = go.Figure()
 
@@ -231,8 +267,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         x=list(calls_oi.keys()),  # Sorted expiration dates for calls
         y=list(calls_oi.values()),  # Total open interest per date
         name='Call OI',
-        marker_color='#5a916d',
-        opacity=0.60,
+        marker_color='#708d8b',
+        opacity=0.55,
         showlegend=True,
         hovertemplate='%{y:.3s}<extra></extra>'
     ))
@@ -242,8 +278,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         x=list(puts_oi.keys()),  # Sorted expiration dates for puts
         y=list(puts_oi.values()),  # Total open interest per date
         name='Put OI',
-        marker_color='#875656',
-        opacity=0.60,
+        marker_color='#b87d6e',
+        opacity=0.55,
         showlegend=True,
         hovertemplate='%{y:.3s}<extra></extra>'
     ))
@@ -298,10 +334,10 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='Call',
         mode='lines+markers',  # Add markers
         connectgaps=True,
-        opacity=0.55,
+        opacity=0.56,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#75f542', width=2.25),
+        line=dict(color='#75f542', width=2.65),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -332,8 +368,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='2nd Most-Bought Call',
         mode='lines',
         marker_color='#57f542',
-        opacity=.40,
-        line=dict(width=1.90),
+        opacity=.47,
+        line=dict(width=2.85, dash='dot'),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -345,8 +381,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='3rd Most-Bought Call',
         mode='lines',
         marker_color='#25f74f',
-        opacity=.32,
-        line=dict(width=1.40),
+        opacity=.37,
+        line=dict(width=2.55, dash='dot'),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -359,10 +395,10 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='Put',
         mode='lines+markers',  # Add markers
         connectgaps=True,
-        opacity=0.55,
+        opacity=0.56,
         yaxis='y2',
         showlegend=True,
-        line=dict(color='#f54242', width=2.25),
+        line=dict(color='#f54242', width=2.65),
         marker=dict(
             size=[
                 (df['openInterest'].fillna(
@@ -393,8 +429,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='2nd Most-Bought Put',
         mode='lines',
         marker_color='#d16262',
-        opacity=.40,
-        line=dict(width=1.90),
+        opacity=.47,
+        line=dict(width=2.85, dash='dot'),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -406,8 +442,8 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         name='3rd Most-Bought Put',
         mode='lines',
         marker_color='#d17b7b',
-        opacity=.32,
-        line=dict(width=1.40),
+        opacity=.37,
+        line=dict(width=2.55, dash='dot'),
         yaxis='y2',
         showlegend=False,
         hovertemplate='%{y:.2f}<extra></extra>'
@@ -433,17 +469,21 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             f"<b>Net Call Volume: <span style='color:{call_color}'>{formatted_call_volume}</b></span><br>"
             f"<b>Net Put Volume: <span style='color:{put_color}'>{formatted_put_volume}</b></span>"
         ),
-        xref="paper", yref="paper",
-        x=0.01, y=1.20,  # Adjust the position (y > 1 moves it further up)
+        xref="paper",
+        yref="paper",
+        x=0.99,  # move to right side
+        y=1.20,
+        xanchor="right",  # anchor on the right
+        yanchor="top",
         showarrow=False,
         font=dict(
             family="Arial, sans-serif",
             size=10,
             color="white"
         ),
-        align="left",
-        bgcolor="#515452",  # Background color
-        bordercolor="#636363",  # Border color
+        align="right",  # text alignment
+        bgcolor="#515452",
+        bordercolor="#636363",
         borderwidth=1,
         borderpad=5
     )
@@ -468,17 +508,21 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             f"<b>Net Call Premium: <span style='color:{call_premium_color}'>{formatted_call_premium}</b></span><br>"
             f"<b>Net Put Premium: <span style='color:{put_premium_color}'>{formatted_put_premium}</b></span>"
         ),
-        xref="paper", yref="paper",
-        x=0.01, y=1.09,  # Slightly lower than the previous annotation
+        xref="paper",
+        yref="paper",
+        x=0.99,
+        y=1.09,
+        xanchor="right",
+        yanchor="top",
         showarrow=False,
         font=dict(
             family="Arial, sans-serif",
             size=10,
             color="white"
         ),
-        align="left",
-        bgcolor="#515452",  # Background color
-        bordercolor="#636363",  # Border color
+        align="right",
+        bgcolor="#515452",
+        bordercolor="#636363",
         borderwidth=1,
         borderpad=5
     )
@@ -497,6 +541,13 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         formatted_strike = f"{int(ann['strike']):,}"
         formatted_open_interest = f"{int(ann['openInterest']):,}"
         formatted_total_spent = ann['total_spent']
+
+        # Decide the background color if 'volume' > 'openInterest'
+        # Purple hex color example => #8B00FF or #800080
+        if ann['unusual']:
+            annotation_bg_color = '#2a1c63'  # Purple
+        else:
+            annotation_bg_color = '#3b3b3b'  # Default
 
         # Use HTML to format the annotation text
         annotation_text = (
@@ -520,7 +571,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
                 size=8,
                 color='#ffffff'
             ),
-            bgcolor='#3b3b3b',
+            bgcolor=annotation_bg_color,  # <-- Use the variable
             showarrow=True,
             arrowhead=0,  # Set to 0 to remove arrowhead shape
             ax=ax_offset,
@@ -559,7 +610,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         yref='y2',
         line=dict(
             color='#00dbf4',
-            width=1,
+            width=1.75,
             dash='solid',
         )
     )
@@ -573,7 +624,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         yref='y2',
         font=dict(
             family='Arial, sans-serif',
-            size=10,
+            size=14,
             color='#ffffff'
         ),
         bgcolor='#333333',
@@ -595,21 +646,33 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         showlegend=True
     ))
 
+    dollar_color = "green" if daily_change_dollar > 0 else "red"
+    pct_color = "green" if daily_change_pct > 0 else "red"
+
+    title_text = (
+        f"<span style='font-size:37px;'>{ticker}</span> "
+        f"<span style='font-size:23px;'>({company_name})</span><br>"
+        f"<span style='font-size:33px; color:#222a33;'><i>${current_price:.2f}</i></span>"
+        f"<span style='font-size:16px;'>"
+        f"<span style='color:{dollar_color}; font-style:italic;'>    {daily_change_dollar:+.2f}</span> "
+        f"(<span style='color:{pct_color}; font-style:italic;'>{daily_change_pct:+.2f}%</span>)"
+        f"</span>"
+    )
+
     # Update layout with consistent settings
     fig.update_layout(
         title=dict(
-            text=f'{ticker} - ${current_price:.2f}<br><span style="font-size:14px; line-height:0.4;">({company_name})</span>',
-            x=0.5,
-            y=0.96,
-            xanchor='center',
+            text=title_text,
+            x=0.1,  # Move all the way to the left edge of the plot
+            xanchor='left',  # Anchor it on the left side
+            y=0.94,
             yanchor='top',
-            font=dict(size=30, family='Arial, sans-serif', color='#01234a', style='italic')
-        ),
-        legend=dict(
-            x=0.5, y=1.08,
-            xanchor='center', yanchor='top',
-            font=dict(size=10, family='Arial, sans-serif', style='italic'),
-            orientation='h',
+            font=dict(
+                size=30,
+                family='Times New Roman, serif',
+                color='#01234a',
+                style='italic'
+            )
         ),
         xaxis=dict(
             title='',
@@ -619,7 +682,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
             tickangle=38,  # Force the x-axis tick labels to display at a 45-degree angle
             tickfont=dict(
                 family="Arial, sans-serif",
-                size=12.5,  # Adjust size if necessary
+                size=13.5,  # Adjust size if necessary
                 color='#01234a'
             )
         ),
@@ -644,6 +707,7 @@ def calculate_and_visualize_data(ticker, width=600, height=400):
         barmode='group',
         plot_bgcolor='#a8a8a8',
         paper_bgcolor='#a8a8a8',
+        showlegend=False,
         width=width,
         height=height
     )
